@@ -40,6 +40,7 @@ def textToArray(filename, minimize):
 			truthtable = np.zeros([2]*size) #make array based on num of inputs
 			terms = line.split()
 			for term in terms:
+				#TODO 
 				# check if a char is a char or char'
 				# for each literal go to that array index and set as 1
 			names[equation_ID]=truthtable
@@ -94,5 +95,6 @@ def factor():
 				c_input_list.append(reused_output) #TODO make sure this is string
 				new_term=compare_outputs+"="+'+'.join(c_input_list)
 				factored.append(compare)
+				#TODO finish this so meaningful
 
 	#TODO can these equations be decomposed by similar terms?
