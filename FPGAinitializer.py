@@ -122,6 +122,7 @@ def main():
 			print("Invalid input. Please pick option A or B.")
 	
 	if useBitstream:
+		#TODO get file
 		bits = first line #turn to list
 	
 	# MAKE NEW FPGA via USER INPUT
@@ -173,7 +174,7 @@ def main():
 			ex_inputs = fpgaDesign.get_inputs()
 			print(ex_inputs)
 		elif key == '5': # Show external outputs
-			ex_inputs = fpgaDesign.get_outputs()
+			ex_outputs = fpgaDesign.get_outputs()
 			print(ex_outputs)
 		elif key == '6': # Craft bitstream
 			#TODO output file, choose name
