@@ -5,6 +5,7 @@ class FPGA:
 	output=[]
 
 	def __init__(self,LUTnum, connects, inputs_num, outputs_num):
+		#set sizes of elements
 		for i in range(LUTnum):
 			name = "LUT"+str(i)
 			LUTS[name]="."
@@ -19,55 +20,61 @@ class FPGA:
 
 	def map_connections(self):
 		#TODO output connections
+		
+	def get_connections(self):
+		return self.connects
 
-	# takes a list of equations - User Interaction
+	# takes a list of equations, assume indexed as to where they shuld go
 	def set_LUTS(self, equations):
-		#TODO make this done automatically?
-		#TODO also check if number of luts is valid for size of equation
-		print("You have % LUTS, please put 0-% to specify LUT.".format(len(LUTS),len(LUTS)))
-		for equation in equations:
-			spot=input('Which LUT should % go in?'.format(equation))
-			name="LUT"+str(spot)
-			self.LUTS[name]=equation
+		for i in range(len(equations)):
+			name="LUT"+str(i)
+			self.LUTS[name]=equations[i]
 
 	#takes one equation and a specific number
 	def set_LUT(self, num, equation):
 		name="LUT"+str(num)
-		#TODO check that it exists
-		self.LUTS[name]=equation
+		if name in self.LUTS:
+			self.LUTS[name]=equation
+		else:
+			print("This LUT doesn't exist")
 
 	def get_LUTS(self):
-		for entry in self.LUTS: #TODO change format?
-			print(entry+": "+self.LUTS[entry])
+		return tuple(self.LUTS.items()) #immutable
 
 	def get_LUT(self, LUTnum):
-		#TODO check that num exists
 		name = "LUT"+str(LUTnum)
-		print(name+": "LUTS[name])
+		if name in self.LUTS:
+			return self.LUTS[name]
+		else:
+			return "LUT not found" #TODO make sure its a string
 
 	def get_inputs(self):
-		print(self.inputs)
+		return self.inputs
 
 	#assumes that passing a list of characters
 	def set_inputs(self, inputs_list):
-		#TODO check that appropriate sizes
 		for i in range(len(inputs_list)):
 			self.inputs[i]=inputs_list[i]
 
-	def set_input(self, input_value, place): #TODO switch order of fields
-		#TODO check that place is valid
-		self.inputs[place]=input_value
+	def set_input(self, input_place, input_value):
+		if 0 <= input_place <= len(self.inputs):
+			self.inputs[input_place]=input_value
+		else:
+			print("That input is not valid")
 
 	def get_outputs(self):
-		print(self.outputs)
+		return self.outputs
 
 	def set_outputs(self, outputs_list):
-		#TODO check appropriate sizes
 		for i in range(len(outputs_list)):
 			self.outputs[i]=outputs_list[i]
 
-	def set_output(self, output_value, place): #TODO switch order of fields
-		#TODO check that place is valid
-		self.outputs[place]=output_value
+	def set_output(self, output_place, output_value):
+		if 0 <= output_place <= len(self.outputs):
+			self.outputs[output_place]=output_value
+		else:
+			print("That input is not valid")
 
 	#TODO output visually?
+	def get_FPGA(self):
+		print("Hello world!")
