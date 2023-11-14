@@ -7,9 +7,9 @@ This program takes an input of equations and maps it to an FPGA. More here later
 * ~minimizer~
 * factorer
 * ~specify input format~
-* interconnect by number of literals
-* ~data structure~
-* clean up logic_synthesis file
+* data structure
+* clean up
+* bitstream
 
 ## Files
 * FPGAinitializer.py : This program takes user input and creates the FPGA structure.

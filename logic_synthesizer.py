@@ -4,14 +4,10 @@ import numpy as np
 #TODO organize factorer
 #TODO allow for options on factor level and minimization
 
-names = {}
-equations = []
-factored = []
 
-# Takes a file with list of equations and a bool to minimize, and outputs a list of equations.
+# Takes a file with list of equations and outputs a dictionary of each equation represented as a MD array
 def textToArray(filename, minimize):
-	global names
-	global equations
+	names = {}
 
 	# check if exists : already done in initializer
 	with open(filename, "r") as file:
@@ -71,17 +67,9 @@ def textToArray(filename, minimize):
 				if indice in true_indice:
 					truthtable[indice] = 1
 			names[equation_ID]=truthtable
+	return names
 
-			#if minimized, minimize from entry
-			if minimize:
-				sample = prime_implicants(truthtable)
-				sample1 = essential_prime_implicants(sample, truthtable)
-				preserved_prime_implicants = sample.copy()
-				eqn = format_sop(choose_terms(sample,sample1, truthtable))
-			else:
-				eqn = line
-			equations.append(eqn)
-
+#Takes a list of characters, and if any char represents a dont care, expands the list
 def dont_cares(true):
 	none_holder = []
 	none_holder.append(true)
@@ -97,13 +85,11 @@ def dont_cares(true):
 		else:
 			working = none_holder.pop(0)
 			clean_holder.append(working)
-
 	return clean_holder
 
 # From a list of equations, checks if they are factorable and outputs a list of factored equations.
-def factor():
-	global equations
-	global factored
+def factor_level1(equations):
+	factored = []
 	#is equation referenced?
 	for eqn in equations:
 		#get output
@@ -118,8 +104,8 @@ def factor():
 	for eqn in equations:
 		#get output and inputs
 		seperate_equation=eqn.split("=")
-		reused_output=seperate_equation[1]
-		reused_inputs=seperate_equation[2]
+		reused_output=seperate_equation[0]
+		reused_inputs=seperate_equation[1]
 		r_input_list=reused_inputs.split("+")
 
 		#check other equations
@@ -137,12 +123,11 @@ def factor():
 				c_input_list.append(reused_output) #TODO make sure this is string
 				new_term=compare_outputs+"="+'+'.join(c_input_list)
 				factored.append(new_term)
+	#TODO if equation hasnt been changed, add to array so that every term is there.
+	return factored
 
-	#TODO can these equations be decomposed by similar terms?
-	#TODO if equation hasnt been changed, add to array so that every term is there. 
-
-
-def mega_factor():
+#From a list of equations, outputs a list of equations factored based on eachother
+def factor_level2(equations):
 	equation_id = []
 	common_literals = []
 	mass_common_terms = {}
@@ -169,7 +154,7 @@ def mega_factor():
         						mass_common_terms[key].append(i,j)
         					else:
         						mass_common_terms[key]=[i,j]
-	
+	#TODO
 	# Factor common equations
 	# for each item in mass common terms, 
 		#turn to a set, 
@@ -188,6 +173,7 @@ def mega_factor():
 	#Return factored list
 	#decompose and factor :)
 
+# From a list of terms, outputs the most common terms as a dictionary
 def find_common_literals(words):
     common_letters = []
     common_series = []
@@ -204,7 +190,7 @@ def find_common_literals(words):
             if common_sequence:
                 common_series.append(common_sequence)
 
-    common_series = list(set(common_series))
+    common_series = list(set(common_series)) # remove dupes
 
     for word in words:
         letters = list(word)
@@ -219,10 +205,42 @@ def find_common_literals(words):
                 else:
                     common_tally[common_term] = 1
                     #print("New! {} created".format(common_term))
-    #todo if common tally empty, return empty dictionary
+    #TODO if common tally empty, return empty dictionary
     return common_tally
 
-def factor_rewriter(eqn, common):
-	# TODO
-	print("Hello world")
+#Takes an equation string and common term, and factors it out and outputs it as a new string
+def factor(eqn, common):
+	working_str = eqn
+	output = working_str.split("=")
+	inputs = output[1]
+	output = output[0]
+	new_terms = []
+	new_terms_no_factor = []
 
+	chars_to_check = list(common)
+
+	terms = inputs.split("+")
+	for term in terms:
+		new_term = []
+		counting = []
+		for char in char_to_check:
+			counting.append(term.find(char))
+		if -1 in counting:
+			#cannot be factored so leave alone
+			new_terms_no_factor.append(term)
+			pass
+		else:
+			#parse factored terms
+			for i in range(len(term)):
+				if i in counting:
+					pass
+				else:
+					new_term.append(term[i])
+		#add to list
+		new_terms.append(''.join(new_term))
+
+	#craft string
+	working_str = '+'.join(new_terms)
+	working_str = common+"("+working_str+")"
+	working_str = working_str + "+".join(new_terms_no_factor)
+	return working_str
