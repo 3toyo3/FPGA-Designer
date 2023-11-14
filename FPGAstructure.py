@@ -1,14 +1,16 @@
 class FPGA:
 	LUTS={}
-	connects=[] #TODO
+	connects=[] #TODO can be a part of lut above?
 	inputs=[]
 	output=[]
 
-	def __init__(self,LUTnum, connects, inputs_num, outputs_num):
+	def __init__(self, connects, inputs_num, outputs_num):
 		#set sizes of elements
 		for i in range(LUTnum):
-			name = "LUT"+str(i)
+			name = "LUT"+str()
 			LUTS[name]="."
+		#name = "LUT"+str(1)
+		#LUTS[name] = "."
 		self.LUTS=LUTS
 		self.connects=connects
 
@@ -19,8 +21,9 @@ class FPGA:
 		self.outputs=outputs
 
 	def map_connections(self):
+		print("Hello world!")
 		#TODO output connections
-		
+
 	def get_connections(self):
 		return self.connects
 
@@ -46,7 +49,7 @@ class FPGA:
 		if name in self.LUTS:
 			return self.LUTS[name]
 		else:
-			return "LUT not found" #TODO make sure its a string
+			return "LUT not found"
 
 	def get_inputs(self):
 		return self.inputs
@@ -75,6 +78,5 @@ class FPGA:
 		else:
 			print("That input is not valid")
 
-	#TODO output visually?
-	def get_FPGA(self):
-		print("Hello world!")
+	def show_FPGA(self):
+		print("Hello world!") #TODO plantUML?
