@@ -4,7 +4,7 @@ This program takes an input of equations and maps it to an FPGA. More here later
 
 ## Todo:
 * ~ask about inputs~
-* minimizer
+* ~minimizer~
 * factorer
 * ~specify input format~
 * interconnect by number of literals

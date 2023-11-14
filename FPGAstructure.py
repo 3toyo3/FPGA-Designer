@@ -1,26 +1,15 @@
+import networkx as nx
+
 class FPGA:
-	LUTS={}
-	connects=[] #TODO can be a part of lut above?
-	inputs=[]
-	output=[]
+	FPGA_graph = []
 
-	def __init__(self, connects, inputs_num, outputs_num):
-		#set sizes of elements
-		for i in range(LUTnum):
-			name = "LUT"+str()
-			LUTS[name]="."
-		#name = "LUT"+str(1)
-		#LUTS[name] = "."
-		self.LUTS=LUTS
-		self.connects=connects
+	def __init__(self):
+		FPGA_graph = nx.DiGraph()
 
-		inputs = [0]*inputs_num
-		self.inputs=inputs
+	def __init__(self, LUTS, connects)
+		FPGA_graph = nx.DiGraph()
 
-		outputs=[0]*outputs_num
-		self.outputs=outputs
-
-	def map_connections(self):
+	def connect_LUT(self):
 		print("Hello world!")
 		#TODO output connections
 

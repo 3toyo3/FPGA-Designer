@@ -1,5 +1,9 @@
 import numpy as np
 
+#TODO fix return functions
+#TODO organize factorer
+#TODO allow for options on factor level and minimization
+
 names = {}
 equations = []
 factored = []
@@ -62,7 +66,7 @@ def textToArray(filename, minimize):
 				else:
 					new_indices = truth_value
 				for item in new_indices:
-					true_indices.append(tuple(item))
+					true_indices.append(tuple(item)) #TODO check if this outputs correct type
 			for indice in np.ndindex(truthtable.shape):
 				if indice in true_indice:
 					truthtable[indice] = 1
@@ -140,25 +144,85 @@ def factor():
 
 def mega_factor():
 	equation_id = []
-	equation_terms = []
 	common_literals = []
+	mass_common_terms = {}
+	enacted_equations = []
 
 	#Find common literals in each equation
-	for i in range[equations]:
+	for i in range(len(equations)):
 		eqn = equations[i]
 		eqn_terms = eqn.split("=")
 		eqn_terms = eqn_term[1]
 		terms = eqn_term.split("+")
-		for term in terms:
-			print("Hello world!")
-			# find common literals
+		common_literals[i] = find_common_literals
+		
+	#Check if equations have common literals
+	for i in range(len(common_literals)):
+		for j in range (len(common_literals)):
+			if i == j:
+				pass
+			else:
+				common_mass_literals = set(common_literals[i].items()) & set(common_literals[j].items())
+				if common_mass_literals:
+					for key, value in common_entries:
+        					if key in mass_common_terms:
+        						mass_common_terms[key].append(i,j)
+        					else:
+        						mass_common_terms[key]=[i,j]
+	
+	# Factor common equations
+	# for each item in mass common terms, 
+		#turn to a set, 
+		# then choose the longest one to enact
+		# repeat if only the equations havent been enacted upon. 
+			# if so, pop then factor. 
+			# do till dictionary is empty.
+	
+	# Factor non common by what makes the most impact
+	#To get the rest, check which have been enacted and remove from a sequence of to be enacted upon
+	#if it has a dictionary, do
+	#Factor those one by one based on highest value within dictionary entry
+	#Add to factored list
+	#Append any missing equations to factored list as basic and boring as is.
 
+	#Return factored list
 	#decompose and factor :)
-	#1 check each equation for common literals
-	#2 if two equations are common, factor
-	#3 factor any others by most common
-	#4 the rest will be appended on
+
+def find_common_literals(words):
+    common_letters = []
+    common_series = []
+    common_tally = {}
+
+    for i in range(len(words)):
+        for j in range(i + 1, len(words)):
+            common_set = set(words[i]) & set(words[j])
+            common_letters.extend(common_set)
+
+            common_sequence = ''.join(
+                letter for letter in words[i] if letter in common_set
+            )
+            if common_sequence:
+                common_series.append(common_sequence)
+
+    common_series = list(set(common_series))
+
+    for word in words:
+        letters = list(word)
+        for i in range(len(common_series)):
+            common_term = common_series[i]
+            common_letters = list(common_term)
+            #print("Looking at {} and {}".format(str(letters), str(common_letters)))
+            if all(item in letters for item in common_letters):
+                if common_term in common_tally:
+                    common_tally[common_term] = common_tally[common_term] + 1
+                    #print("Old! {} now at {}".format(common_term, common_tally[common_term]))
+                else:
+                    common_tally[common_term] = 1
+                    #print("New! {} created".format(common_term))
+    #todo if common tally empty, return empty dictionary
+    return common_tally
 
 def factor_rewriter(eqn, common):
+	# TODO
 	print("Hello world")
 
