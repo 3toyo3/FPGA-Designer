@@ -1,7 +1,5 @@
 import numpy as np
 
-#TODO fix return functions
-#TODO organize factorer
 #TODO allow for options on factor level and minimization
 
 
@@ -89,89 +87,123 @@ def dont_cares(true):
 
 # From a list of equations, checks if they are factorable and outputs a list of factored equations.
 def factor_level1(equations):
-	factored = []
+	eqns_list = []
+	eqns_dict = {}
+	#mutable
+	for eqn in equations: #puts every equation in dictionary
+		seperate_eqn = eqn.split("=")
+		eqns_dict[seperate_eqn[0]]=seperate_eqn[1]
+		
 	#is equation referenced?
-	for eqn in equations:
-		#get output
-		seperate_equation=eqn.split("=")
-		output=seperate_equation[1]
-
-		for i in range(len(eqn)):
-			if output in equations[i]:
-				factored.append(compare)
-
-	#is the equation reused but without referring to output? -- substituion
-	for eqn in equations:
-		#get output and inputs
-		seperate_equation=eqn.split("=")
-		reused_output=seperate_equation[0]
-		reused_inputs=seperate_equation[1]
-		r_input_list=reused_inputs.split("+")
-
-		#check other equations
-		for i in range(len(eqn)):
-			compare_sep_equation=equation[1].split("=")
-			compare_outputs=compare_sep_equation[1]
-			compare_inputs=compare_sep_equation[2]
-			c_input_list=compare_inputs.split("+")
-
-			#check if the same terms exist
-			common=[term in r_input_list for term in c_input_list]
-			if len(common) == len(r_input_list): #only remove if all exist
-				for term in common:
-					c_input_list.remove(term)
-				c_input_list.append(reused_output) #TODO make sure this is string
-				new_term=compare_outputs+"="+'+'.join(c_input_list)
-				factored.append(new_term)
-	#TODO if equation hasnt been changed, add to array so that every term is there.
-	return factored
+	for entry1 in eqns_dict:
+		for entry2 in eqns_dict:
+			if entry1 == entry2:
+				pass
+			else:
+				if entry1 in eqns_dict[entry2]:
+					print("Cool") #idk not necessarily anything currently
+	#can I completely substitute an equation?
+	for entry1 in eqns_dict:
+		substitute_terms=eqns_dict[entry1].split("+")
+		for entry2 in eqns_dict:
+			if entry1 == entry2:
+				pass
+			else:
+				substituted_terms=eqns_dict[entry2].split("+")
+				common=[term in r_input_list for term in c_input_list]
+				if len(common) == len(substitute_terms): #only remove if all exist
+					for term in common:
+						substituted_terms.remove(term)
+					substituted_terms.append(entry1)
+					new_term='+'.join(substituted_terms)
+					eqns_dict[entry2]=new_term
+	#make a list of strings
+	for entry in eqns_dict:
+		eqns_list.append(entry+"="+eqns_dict[entry2])
+	return eqns_list
 
 #From a list of equations, outputs a list of equations factored based on eachother
 def factor_level2(equations):
-	equation_id = []
-	common_literals = []
+	eqns_dict = {}
+	common_literals_per_eqn = {}
 	mass_common_terms = {}
-	enacted_equations = []
+	eqns_list = []
 
-	#Find common literals in each equation
-	for i in range(len(equations)):
-		eqn = equations[i]
-		eqn_terms = eqn.split("=")
-		eqn_terms = eqn_term[1]
-		terms = eqn_term.split("+")
-		common_literals[i] = find_common_literals
-		
+	#Set up equations
+	for eqn in equations:
+		eqn_split = eqn.split("=")
+		eqn_inputs=eqn_split[1]
+		eqn_inputs=eqn_inputs.split("+")
+		eqns_dict[eqn_split[0]]=eqn_inputs
+
+	common_literals_per_eqn = eqns_dict.copy()
+
+	for entry in common_literals_per_eqn:
+		eqn_terms = common_literals_per_eqn[entry]
+		common_literals_per_eqn[entry]=find_common_literals(eqn_terms)
+
 	#Check if equations have common literals
-	for i in range(len(common_literals)):
-		for j in range (len(common_literals)):
-			if i == j:
+	for entry1 in common_literals_per_eqn:
+		for entry2 in common_literals_per_eqn:
+			if entry1 == entry2:
 				pass
 			else:
-				common_mass_literals = set(common_literals[i].items()) & set(common_literals[j].items())
+				common_mass_literals = set(common_literals_per_eqn[entry1].items()) & set(common_literals_per_eqn[entry2].items())
 				if common_mass_literals:
-					for key, value in common_entries:
+					for key, value in common_mass_literals:
         					if key in mass_common_terms:
-        						mass_common_terms[key].append(i,j)
+        						mass_common_terms[key].append(entry1)
+        						mass_common_terms[key].append(entry2)
         					else:
-        						mass_common_terms[key]=[i,j]
-	#TODO
-	# Factor common equations
-	# for each item in mass common terms, 
-		#turn to a set, 
-		# then choose the longest one to enact
-		# repeat if only the equations havent been enacted upon. 
-			# if so, pop then factor. 
-			# do till dictionary is empty.
-	
-	# Factor non common by what makes the most impact
-	#To get the rest, check which have been enacted and remove from a sequence of to be enacted upon
-	#if it has a dictionary, do
-	#Factor those one by one based on highest value within dictionary entry
-	#Add to factored list
-	#Append any missing equations to factored list as basic and boring as is.
+        						mass_common_terms[key]=[entry1,entry2]
+	# Remove dupes
+	for term in mass_common_terms:
+		mass_common_terms[term] = set(mass_common_terms[term])
 
-	#Return factored list
-	#decompose and factor :)
+	# Factor common equations
+	factorsExist = True
+	while factorsExist:
+		most_common_term = max(mass_common_terms, key=lambda x: len(mass_common_terms[x]))
+		common_equations = mass_common_terms.pop(most_common_term)
+
+		#Check if the most_common_to_be_factor in other could-be-factors and removes
+		for entry in mass_common_terms:
+			for eqns in mass_common_terms[entry]:
+				if eqn in common_equations:
+					eqn.remove(eqn)
+
+		#Factore each
+		for eqn in common_equations:
+			terms = eqns_dict[eqn]
+			terms = factor(terms, most_common_term)
+			eqns_dict[eqn] = terms
+
+		#then repeat until either dictionary is empty or the remaining entries are 1 length
+		all_length_one = all(len(value) == 1 for value in mass_common_terms.values())
+		if len(mass_common_terms) == 0:
+			factorsExist = False
+		elif all_length_one:
+			factorsExist = False
+		else:
+			pass
+
+	# Factor non common by what makes the most impact
+	for entry in common_literals_per_term:
+		#Find most common term
+		common_terms = common_literals_per_terms[entry]
+		most_common_term = max(common_terms, key=common_terms.get)
+
+		#Factor
+		terms = eqns_dict[entry]
+		terms = factor(terms, most_common_term)
+		eqns_dict[entry]= terms
+
+	#Turn dictionary to list
+	for eqn in eqns_dict:
+		new_terms = eqns_dict[eqn]
+		new_terms = "+".join(new_terms)
+		eqns_list.append(eqn+"="+new_terms)
+	return eqns_list
 
 # From a list of terms, outputs the most common terms as a dictionary
 def find_common_literals(words):
@@ -209,6 +241,7 @@ def find_common_literals(words):
     return common_tally
 
 #Takes an equation string and common term, and factors it out and outputs it as a new string
+#TODO make this work on only after the equal aka list of terms
 def factor(eqn, common):
 	working_str = eqn
 	output = working_str.split("=")
