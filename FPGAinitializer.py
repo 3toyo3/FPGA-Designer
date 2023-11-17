@@ -7,8 +7,6 @@ from logic_synthesizer import *
 
 # This program sets up the FPGA based on user input
 
-bits=['I'] #for bitstream
-
 def check_file(filename):
 	file_exists = exists(filename)
 	return file_exists
@@ -21,7 +19,7 @@ def get_LUTS_num():
 				LUTS_num = int(LUTS_num)
 				break
 		print("Input must be a integer that is greater than 0.")
-	bits.append(LUTS_num) #bits 1
+	return LUTS_num
 
 def get_LUT_type():
 	while True:
@@ -36,7 +34,7 @@ def get_LUT_type():
 			break
 		else:
 			print("Invalid input. Please pick option A or B.")
-	bits.append(LUTS_type) #bits 2
+	return LUTS_type
 
 def get_connectivity():
 	while True:
@@ -52,26 +50,27 @@ def get_connectivity():
 			break
 		else:
 			print("Invalid input. Please pick option A or B")
-	bits.append(connect_type) #bits 3
+	return connect_type
 
 def specify_connectivity(connect_type): #TODO this function
 	if connect_type == 2:
-		while True:
-			filename = input("File Name: ")
-			if check_file(filename):
-				with open(filename, 'r') as file: #TODO fix this assumption
-					line = file.readline() #must be on one line
-				#TODO any processing
-				connections = line
-				break
-			else:
-				print("That file doesn't seem to exist.")
+		connections = 1
+		#while True:
+		#	filename = input("File Name: ")
+		#	if check_file(filename):
+		#		with open(filename, 'r') as file: #TODO fix this assumption
+		#			line = file.readline() #must be on one line
+		#		#TODO any processing
+		#		connections = line
+		#		break
+		#	else:
+		#		print("That file doesn't seem to exist.")
 	else:
 		print("Fully connected")
 		connections = 1
 		#TODO Fully connected
 		#Specify here
-	bits.append(connections) #bit 4
+	return connections
 
 def get_IO():
 	while True:
@@ -81,31 +80,68 @@ def get_IO():
 			if (int(input_num) > 0) & (int(output_num) > 0):
 				input_num = int(input_num)
 				output_num = int(output_num)
-				bits.append(input_num) #bits 5
-				bits.append("0") #bits 6
-				bits.append(output_num) #bits 7
-				bits.append("0") #bits 8
 				break
 		print("Inputs must be integers greater than 0")
+	return input_num, output_num
 
-def get_equations(): #TODO expand into optimizing and stuff
+def get_equations():
+	equations = []
 	while True:
 		print("Please input blif file for the logic expressions")
 		blif_file_path=input()
 		if exists(blif_file_path):
 			if blif_file_path[-5:]==".blif":
+				with open(blif_file_path, 'r') as file:
+					lines_list=file.readlines()
 				break
-				#TODO craft equations here
 			else:
 				print("Please choose a blif file.")
 			break
 		else:
 			print("File {} doesnt exist.".format(blif_file_path))
 			print("Please try again.")
-		#gather, minimize, and stuff optimize
-	bits.append('F'+str(equations)) #bits 8  # TODO turn , to .
-	#from here also append the I/O and connections again
-	#TODO make sure before minimizing to convert case. also make sure output of minimizer puts out the correct variables of the equation
+	for line in lines_list:
+		eqn = line.strip() #remove \n
+		equations.append(eqn)
+	return equations
+
+def basic_prompt(word):
+	while True:
+		print("Do you want the FPGA to be {}?".format(word))
+		user_input = input("A: Yes  B: No")
+		if user_input is 'A':
+			user_input = True
+		elif user_input is 'B':
+			user_input = False
+		else:
+			print("Please pick option A or B.o")
+	return user_input
+
+#integration sorta
+def craft_new_FPGA(): #TODO partial equations
+	#TODO clean equations
+	minimized=basic_prompt("minimized")
+	if minimized:
+		#textToArray
+		#minimize
+	factored=basic_prompt("factored")
+	if factored:
+		#factor2
+	#substituition
+	if LUT_type == 4:
+		#LUT4
+	elseif LUT_type == 6:
+		#LUT6
+	#final equaitons
+	#TODO partial equations
+	#compare to LUTnum
+	#FPGA using input_num
+	#FPGA using output_num
+	#for each equation in FPGA
+		#put in
+
+#TODO
+#def recraft_FPGA():
 
 def output_prompt():
 	print("FPGA Display Options:")
@@ -116,12 +152,11 @@ def output_prompt():
 	print("[5] Show external output assignments")
 	print("[6] Craft bitstream of current FPGA")
 	print("[7] Show resource allocation")
-	#print("[8] Show FPGA visually") #TODO decomment once done
+	print("[8] Show FPGA visually")
 	print("[h] Show this prompt again")
 	print("[q] Quit program")
 
 def main():
-	global bits
 	useBitstream = False
 	print("Setting up FPGA...")
 
@@ -147,6 +182,7 @@ def main():
 		else:
 			print("Invalid input. Please pick option A or B.")
 
+	#===============Recraft FPGA
 	if useBitstream:
 		with open(bitstream_file, 'r') as file:
 			rawbits = file.read()
@@ -154,65 +190,25 @@ def main():
 		rawbits = rawbits.split(',')
 		if len(rawbits) == 10:
 			bits = rawbits
+			#TODO parse bitstream
+			#TODO craft FPGA here
 		else:
 			print("This bitstream was improperly formatted. Closing program.")
 			sys.exit()
 
-	# MAKE NEW FPGA via USER INPUT
+	#================MAKE NEW FPGA via USER INPUT
 	else:
-		get_LUTS_num()
-		get_LUT_type()
-		get_connectivity()
-		specify_connectivity(bits[3])
-		get_IO()
-		get_equations()
+		LUTS_num = get_LUTS_num()
+		LUT_type = get_LUT_type()
+		connect_type = get_connectivity()
+		connections = specify_connections()
+		input_num, output_num = getIO()
+		equations = get_equations()
 
-	# Construct FPGA
-	# After this point, program assumes that optimized and connections are drawn
-	LUTS_num = bits[1]
-	LUTS_type = bits[2]
-	connect_type = bits[3]
-	connectivity = bits[4]
-	input_num = bits[5]
+		#craft FPGA globally
+		#fpgaDesign=FPGA()
 
-	inputs = bits[6]
-	#format inputs as a list
-	inputs = inputs.strip('[]')
-	inputs = inputs.replace(" ", "")
-	inputs = inputs.split('.')
-
-	output_num = bits[7]
-	outputs = bits[8]
-	#format outputs to a list
-	outputs = outputs.strip('[]')
-	outputs = outputs.replace(" ", "")
-	outputs = outputs.split('.')
-
-	equations = bits[9]
-	#format equations into a list
-	equations = equations.strip('[]')
-	equations = equations[1:]
-	equations = equations.replace(" ", "")
-	equations = equations.split('.')
-
-	fpgaDesign=FPGA(LUTS_num, connections, input_num, output_num)
-
-	#Put LUTS
-	if len(equations) <= int(LUTS_num):
-		fpgaDesign.set_LUTS(equations)
-	else:
-		print("These equations cannot fit on the FPGA with {} LUTS".format(LUTS_num))
-	#Put inputs
-	if len(inputs) <= int(input_num):
-		fpgaDesign.set_inputs(inputs)
-	else:
-		print("This program requires more inputs then necessary")
-	#Put outputs
-	if len(outputs) <= int(output_num):
-		fpgaDesign.set_outputs(outputs)
-	#TODO connections
-
-	#User output
+	#================User output
 	key = 'i'
 	output_prompt()
 	while key != 'q':

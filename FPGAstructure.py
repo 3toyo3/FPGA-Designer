@@ -54,7 +54,7 @@ class FPGA:
 			return luts_num
 		else:
 			return len(self.LUTS)
-		
+ 
 	# takes a list of equations, assume indexed as to where they shuld go
 	# assumes inputs exist
 	def set_LUTS(self, equations):
