@@ -184,6 +184,8 @@ def essential_prime_implicants(prime_implicants,minterms):
 #********************************************************************************************************
 def format(terms):
 
+    sop=""
+
     #Special Case: Output=0
     if len(terms)==0:
         return "F= 0"
