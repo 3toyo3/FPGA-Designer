@@ -251,9 +251,9 @@ def main():
 			for i in LUTS:
 				if i[1] != "."
 					empty+=1
-			print("% of LUT: {}".format()) #TODO
-			print("% of connections: {}".format())
-			print("Total memory required: {}".format())
+			print("% of LUT: {}".format()) #luts / connections of nodes
+			print("% of connections: {}".format()) #number of connections
+			print("Total memory required: {}".format()) #size of bitstream
 		elif key == '8': # Show FPGA visually
 			fpgaDesign.show_FPGA()
 		elif key == 'h':
