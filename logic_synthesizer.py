@@ -1,10 +1,12 @@
 import numpy as np
+#from minimize import *
 
 #TODO allow for options on factor level and minimization
+#TODO convert for factoring and splitting
 
-
+# TODO check this
 # Takes a file with list of equations and outputs a dictionary of each equation represented as a MD array
-def textToArray(filename, minimize):
+def textToArray(filename):
 	names = {}
 
 	# check if exists : already done in initializer
@@ -16,84 +18,123 @@ def textToArray(filename, minimize):
 		if line.startswith('#'):
 			pass #comments allowed :)
 		else:
-			line=line.replace(" ","")
+			eqn=line.replace(" ","")
+			eqn=eqn.rstrip()
 			#get output
+			print(eqn)
 			seperate_formula=eqn.split("=")
-			seperate_formula=seperate_formula[1]
-			output=seperate_formula[:-1]
+			eqn_terms=seperate_formula[1]
+			print(seperate_formula)
+			output=seperate_formula[0]
 
 			#store variables in unique string
 			equation_ID=[output]
 			unique_inputs=[]
-			for char in line: #TODO check ifs
+			for char in line:
 				if char not in unique_inputs and char.isalpha():
 					if char not in output:
-						unique_inputs.append()
-			inputs=",".join(unique_inputs)
-			equation_ID.append(inputs)
-			inputs = inputs.split(",")
-			inputs=tuple(inputs)
+						unique_inputs.append(char)
+			#inputs=",".join(unique_inputs)
+			equation_ID=equation_ID+unique_inputs
+			equation_ID=",".join(equation_ID)
+			inputs=tuple(unique_inputs)
 
 			#make truth table
 			size=len(unique_inputs)
-			#TODO check array is correct
 			truthtable = np.zeros([2]*size) #make array based on num of inputs
-			terms = line.split('+')
-			true_indice = []
+			terms = eqn_terms.split('+')
+			true_indices = []
 			for term in terms:
+				#print(true_indices)
 				truth_value = []
+				print(term)
 				for i in range(len(inputs)):
 					truth_value.append('*') #initialize array with *
-				for i in range(len(term)):
+				for i in range(len(term)): #Find if ' or normal
 					char = term[i]
+					print(char)
 					if char == "'":
 						char = term[i-1]
 						place = inputs.index(char)
 						truth_value[place] = 0
+						#print("Zero")
 					else:
 						place = inputs.index(char)
 						truth_value[place] = 1
+						#print("One")
 				if len(truth_value) != len(inputs):
 					print("Not matching in truth table generation")
 				if '*' in truth_value:
+					print("Dont care")
 					new_indices = dont_cares(truth_value)
+					print(new_indices)
+					for item in new_indices:
+						#print("Item")
+						#print(item)
+						true_indices.append(tuple(item))
 				else:
 					new_indices = truth_value
-				for item in new_indices:
-					true_indices.append(tuple(item)) #TODO check if this outputs correct type
+					true_indices.append(tuple(item))
 			for indice in np.ndindex(truthtable.shape):
-				if indice in true_indice:
+				if indice in true_indices:
 					truthtable[indice] = 1
+					print("Term marked as true found for {}".format(equation_ID))
 			names[equation_ID]=truthtable
 	return names
+
+#Takes a dictionary with equations' MD arrays, and outputs list of minimized equations
+def minimize(names):
+	equations=[]
+	for entry in names:
+		print(entry)
+		truthtable=names[entry]
+		new_string=minimized_sop(truthtable)
+		print(new_string)
+		#TODO Forcefully recreate equation
+
+		equations.append(new_string)
+
+	return equations
 
 #Takes a list of characters, and if any char represents a dont care, expands the list
 def dont_cares(true):
 	none_holder = []
 	none_holder.append(true)
 	clean_holder = []
-
 	while len(none_holder) > 0:
+		#print("None holder")
+		#print(none_holder)
 		if '*' in none_holder[0]:
-			working = none_holder.pop(0)
+			working = list(none_holder.pop(0))
+			#print("Working")
+			#print(working)
 			none_place = working.index('*')
 			working[none_place] = 0
-			none_holder.append(working)
+			working_zero=tuple(working)
+			#print(working)
+			none_holder.append(working_zero)
+			#print(none_holder)
 			working[none_place] = 1
+			working_one=tuple(working)
+			#print(working)
+			none_holder.append(working_one)
 		else:
 			working = none_holder.pop(0)
 			clean_holder.append(working)
+	#print("Clean")
 	return clean_holder
 
 # From a list of equations, checks if they are factorable and outputs a list of factored equations.
-def factor_level1(equations):
+def substituition(equations):
 	eqns_list = []
 	eqns_dict = {}
+	eqns_dict_new = {}
 	#mutable
 	for eqn in equations: #puts every equation in dictionary
 		seperate_eqn = eqn.split("=")
-		eqns_dict[seperate_eqn[0]]=seperate_eqn[1]
-		
+		eqns_dict[seperate_eqn[0]]=seperate_eqn[1] 
+	eqns_dict_new = eqns_dict.copy()
+	#print(eqns_dict_new)
 	#is equation referenced?
 	for entry1 in eqns_dict:
 		for entry2 in eqns_dict:
@@ -104,26 +145,37 @@ def factor_level1(equations):
 					print("Cool") #idk not necessarily anything currently
 	#can I completely substitute an equation?
 	for entry1 in eqns_dict:
-		substitute_terms=eqns_dict[entry1].split("+")
+		substitute_terms=eqns_dict[entry1].split("+") #All these terms must exist in....
+		#print("Substitute")
+		#print(substitute_terms)
 		for entry2 in eqns_dict:
 			if entry1 == entry2:
 				pass
 			else:
-				substituted_terms=eqns_dict[entry2].split("+")
-				common=[term in r_input_list for term in c_input_list]
-				if len(common) == len(substitute_terms): #only remove if all exist
-					for term in common:
+				substituted_terms=eqns_dict[entry2].split("+") #This equation
+				#print("Substituted")
+				#print(substituted_terms)
+				common=[term in substituted_terms for term in substitute_terms ] #r and c
+				#print("Common")
+				#print(common)
+				if all(common):
+					# print("All are true?")
+					for term in substitute_terms:
+						#print(term )
 						substituted_terms.remove(term)
 					substituted_terms.append(entry1)
+					#print(substituted_terms)
 					new_term='+'.join(substituted_terms)
-					eqns_dict[entry2]=new_term
+					eqns_dict_new[entry2]=new_term
+	#print(eqns_dict_new)
+	#print(eqns_dict)
 	#make a list of strings
-	for entry in eqns_dict:
-		eqns_list.append(entry+"="+eqns_dict[entry2])
-	return eqns_list
+	for entry in eqns_dict_new:
+		eqns_list.append(entry+"="+eqns_dict_new[entry])
+	return eqns_list 
 
 #From a list of equations, outputs a list of equations factored based on eachother
-def factor_level2(equations):
+def mutual_factor(equations): #TODO make sure works w multiple '
 	eqns_dict = {}
 	common_literals_per_eqn = {}
 	mass_common_terms = {}
@@ -136,13 +188,22 @@ def factor_level2(equations):
 		eqn_inputs=eqn_inputs.split("+")
 		eqns_dict[eqn_split[0]]=eqn_inputs
 
+	#Find common literals
 	common_literals_per_eqn = eqns_dict.copy()
 
 	for entry in common_literals_per_eqn:
 		eqn_terms = common_literals_per_eqn[entry]
 		common_literals_per_eqn[entry]=find_common_literals(eqn_terms)
 
-	#Check if equations have common literals
+	#Remove any equations that cant be factored
+	eqns_to_remove = [key for key, value in common_literals_per_eqn.items() if isinstance(value, dict) and not value]
+	for eqn in eqns_to_remove:
+    		common_literals_per_eqn.pop(eqn)
+
+	print("Common p eqn")
+	print(common_literals_per_eqn)
+
+	#Check if two equations have common literals
 	for entry1 in common_literals_per_eqn:
 		for entry2 in common_literals_per_eqn:
 			if entry1 == entry2:
@@ -156,52 +217,87 @@ def factor_level2(equations):
         						mass_common_terms[key].append(entry2)
         					else:
         						mass_common_terms[key]=[entry1,entry2]
-	# Remove dupes
+	# Remove dupes from above
 	for term in mass_common_terms:
 		mass_common_terms[term] = set(mass_common_terms[term])
+
+	print("Mass")
+	print(mass_common_terms)
 
 	# Factor common equations
 	factorsExist = True
 	while factorsExist:
 		most_common_term = max(mass_common_terms, key=lambda x: len(mass_common_terms[x]))
+		print(most_common_term)
 		common_equations = mass_common_terms.pop(most_common_term)
+		print("Common equations ")
+		print(common_equations)
 
+		#TODO make this work for cube-free
 		#Check if the most_common_to_be_factor in other could-be-factors and removes
-		for entry in mass_common_terms:
-			for eqns in mass_common_terms[entry]:
+		for entry in mass_common_terms: #TODO check this w single?
+			#print("Entry")
+			#print(entry)
+			entry_equations = tuple(mass_common_terms[entry])
+			eqn_dupes = set(entry_equations)
+			for eqn in entry_equations:
+				#print("Inside removal")
+				#print(eqn)
 				if eqn in common_equations:
-					eqn.remove(eqn)
+					#print("I should be removing {}".format(eqn))
+					eqn_dupes.remove(eqn)
+					#print("Yay!")
+			#print("And now..")
+			#print(entry_equations)
+			#print(eqn_dupes)
+			mass_common_terms[entry]=eqn_dupes
 
-		#Factore each
+		#Remove any 1 term in dictionary
+		not_mass_common_terms_anymore = [key for key, value in mass_common_terms.items() if len(value) == 1]
+		for term in not_mass_common_terms_anymore:
+			mass_common_terms.pop(term)
+
+		print("New mass")
+		print(mass_common_terms)
+
+		#Factore each equation that was found to be common
 		for eqn in common_equations:
 			terms = eqns_dict[eqn]
+			#print("Gonna factor - group")
+			#print(terms)
+			#print(most_common_term)
 			terms = factor(terms, most_common_term)
 			eqns_dict[eqn] = terms
+			common_literals_per_eqn.pop(eqn)
 
 		#then repeat until either dictionary is empty or the remaining entries are 1 length
-		all_length_one = all(len(value) == 1 for value in mass_common_terms.values())
+		#all_length_one = all(len(value) == 1 for value in mass_common_terms.values())
 		if len(mass_common_terms) == 0:
+			#print("Yer")
 			factorsExist = False
-		elif all_length_one:
-			factorsExist = False
-		else:
-			pass
 
+	print(eqns_dict)
+	print(common_literals_per_eqn)
 	# Factor non common by what makes the most impact
-	for entry in common_literals_per_term:
+	for entry in common_literals_per_eqn:
+		print(entry)
 		#Find most common term
-		common_terms = common_literals_per_terms[entry]
+		common_terms = common_literals_per_eqn[entry]
 		most_common_term = max(common_terms, key=common_terms.get)
 
 		#Factor
 		terms = eqns_dict[entry]
+		print("Gonna factor - alone")
+		print(terms)
+		print(most_common_term)
 		terms = factor(terms, most_common_term)
 		eqns_dict[entry]= terms
 
 	#Turn dictionary to list
 	for eqn in eqns_dict:
 		new_terms = eqns_dict[eqn]
-		new_terms = "+".join(new_terms)
+		if type(new_terms) is list:
+			new_terms = "+".join(new_terms)
 		eqns_list.append(eqn+"="+new_terms)
 	return eqns_list
 
@@ -237,26 +333,20 @@ def find_common_literals(words):
                 else:
                     common_tally[common_term] = 1
                     #print("New! {} created".format(common_term))
-    #TODO if common tally empty, return empty dictionary
     return common_tally
 
-#Takes an equation string and common term, and factors it out and outputs it as a new string
-#TODO make this work on only after the equal aka list of terms
-def factor(eqn, common):
-	working_str = eqn
-	output = working_str.split("=")
-	inputs = output[1]
-	output = output[0]
+#Takes an list of terms and common term, and factors it out and outputs it as a new string
+def factor(terms, common):
 	new_terms = []
 	new_terms_no_factor = []
 
 	chars_to_check = list(common)
 
-	terms = inputs.split("+")
+	#terms = inputs.split("+")
 	for term in terms:
 		new_term = []
 		counting = []
-		for char in char_to_check:
+		for char in chars_to_check:
 			counting.append(term.find(char))
 		if -1 in counting:
 			#cannot be factored so leave alone

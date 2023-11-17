@@ -6,11 +6,15 @@ class FPGA:
 	def __init__(self):
 		FPGA_graph = nx.DiGraph()
 
+	#depends on bitstream
 	def __init__(self, LUTS, connects)
 		FPGA_graph = nx.DiGraph()
 
+	#graph.add_edges_from([("root", "a"), ("a", "b"), ("a", "e"), ("b", "c"), ("b", "d"), ("d", "e")])
+
 	def connect_LUT(self):
 		print("Hello world!")
+		#add_edge
 		#TODO output connections
 
 	def get_connections(self):
@@ -24,6 +28,7 @@ class FPGA:
 
 	#takes one equation and a specific number
 	def set_LUT(self, num, equation):
+		#add_node(A, eqn="blah")
 		name="LUT"+str(num)
 		if name in self.LUTS:
 			self.LUTS[name]=equation
@@ -31,6 +36,7 @@ class FPGA:
 			print("This LUT doesn't exist")
 
 	def get_LUTS(self):
+		#graph.nodes()(data=True)
 		return tuple(self.LUTS.items()) #immutable
 
 	def get_LUT(self, LUTnum):
@@ -41,6 +47,9 @@ class FPGA:
 			return "LUT not found"
 
 	def get_inputs(self):
+		#grpah.node()
+		#aka has neighbor successors, no predecssors
+		#must check that outputs only
 		return self.inputs
 
 	#assumes that passing a list of characters
@@ -55,6 +64,8 @@ class FPGA:
 			print("That input is not valid")
 
 	def get_outputs(self):
+		#aka has neighbor predecssors. no successors
+		#graph nodes only inputs
 		return self.outputs
 
 	def set_outputs(self, outputs_list):
