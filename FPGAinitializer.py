@@ -1,6 +1,7 @@
 import numpy as np
 import sys #exit
 from os.path import exists
+from os.path import getsize
 from FPGAstructure import *
 from logic_synthesizer import *
 
@@ -218,42 +219,46 @@ def main():
 		key=input("What do you want to do?")
 		if key=='1':  # Show all LUT assignments
 			LUTS = fpgaDesign.get_LUTS()
-			for i in LUTS:
-				if i[1] == ".":
-					print("{}: Empty".format(i[0]))
-				else:
-					print("{}: {}".format(i[0],i[1]))
+			for i in range(len(LUTS)):
+				print("LUT{}: {}".format(i,LUTS[i]))
 		elif key == '2': # Show specific LUT assignment
 			num = input("Which LUT do you want to see? 1-{}".format(LUTs_num))
-			LUT = fpgaDesign.get_LUT(num)
-			if LUT == ".":
-				print("LUT{} is empty".format(num))
-			else:
+			if num <= fpgaDesign.get_num_luts(): #makesure no index error
+				LUT = fpgaDesign.get_LUT(num)
 				print(LUT)
+			else:
+				print("LUT{} doesn't exist".format(num))
 		elif key == '3': # Show internal connections
 			conn = fpgaDesign.get_connections()
 			print(conn)
 		elif key == '4': # Show external inputs
 			ex_inputs = fpgaDesign.get_inputs()
-			print(ex_inputs)
+			for i in range(len(ex_inputs)):
+				print("I{}: {}".format(i, ex_inputs[i]))
 		elif key == '5': # Show external outputs
 			ex_outputs = fpgaDesign.get_outputs()
-			print(ex_outputs)
+			for i in range(len(ex_outputs)):
+				print("O{}: {}".format(i, ex_outputs[i]))
 		elif key == '6': # Craft bitstream
-			filename = input("Please put a name for the bitstream file.")
-			filename = filename + ".bits"
+			bitstream_file = input("Please put a name for the bitstream file.")
+			bitstream_file = bitstream_file + ".bits"
 			with open(filename, 'w') as file:
-				file.write(str(bits))
-			print("Saved as {}".format(filename))
+				file.write(str(bits)) #TODO craft bitstream
+			print("Saved as {}".format(bitstream_file))
 		elif key == '7': # Show resource allocation
-			LUTS = fpgaDesign.get_LUTS()
-			used_LUTS = 0
-			for i in LUTS:
-				if i[1] != "."
-					empty+=1
-			print("% of LUT: {}".format()) #luts / connections of nodes
-			print("% of connections: {}".format()) #number of connections
-			print("Total memory required: {}".format()) #size of bitstream
+			used_LUTS = fpgaDesign.get_num_luts() #TODO get total number of luts
+			used_connections = fpgaDesign.get_num_connections()
+			total_connection = fpgaDesign.get_lut_size() * used_LUTS
+			if 'total_LUTS' in locals():
+				print("% of LUT: {}".format((used_LUTS/total_LUTS) * 100)) #luts / connections of nodes
+			else:
+				print("% of LUT: {} used".format(used_LUTS)
+			print("% of connections: {}".format((used_connections/total_connection) * 100)) #number of connections
+			bitstream_exists=check_file(bitstream_file)
+			if bitstream_exists:
+				print("Total memory required: {}".format(getsize(filename))) #size of bitstream
+			else:
+				print("-- Create bitstream to find total memory required --")
 		elif key == '8': # Show FPGA visually
 			fpgaDesign.show_FPGA()
 		elif key == 'h':
