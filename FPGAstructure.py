@@ -5,10 +5,10 @@ import matplotlib.pyplot as plot
 class FPGA:
 	FPGA_graph = []
 	LUTS = []
- 	inputs = []
+	inputs = []
 	outputs = []
 	initialized=False
- 
+
 	def __init__(self, input_num=None):
 		if input_num is None:
 			self.FPGA_graph = nx.DiGraph()
@@ -174,7 +174,7 @@ class FPGA:
 				nodes.add(char)
 		return nodes
 
-	def initializeIO(input_num, output_num)
+	def initializeIO(input_num, output_num): 
 		self.inputs = [None]*input_num
 		self.outputs = [None] * output_num
 		self.initialized=True
@@ -219,7 +219,7 @@ class FPGA:
 				self.FPGA_graph.add_edge(input_node, successor)
 		new_inputs = input_nodeless + input_nodes
 		if self.initialized: #If inputnum and output num used AKA new design
-			for i in len(range(self.inputs):
+			for i in len(range(self.inputs)):
 				self.inputs[i] = new_inputs.pop(0)
 		else: #If crafted from bitstream
 			for inp in new_inputs:

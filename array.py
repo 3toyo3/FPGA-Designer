@@ -1,6 +1,6 @@
 import numpy as np
 # Takes string of equation and outputs a truth table as a MD array
-def eqnToArray(eqn)
+def eqnToArray(eqn):
 	print(eqn)
 	seperate_formula=eqn.split("=")
 	eqn_terms=seperate_formula[1]
@@ -12,10 +12,10 @@ def eqnToArray(eqn)
 		if char not in unique_inputs and char.isalpha():
 			if char not in output:
 				unique_inputs.append(char)
-	#inputs=tuple(unique_inputs)
+	inputs=tuple(unique_inputs)
 
 	#make truth table
-	size=len(unique_inputs)
+	size=len(inputs)
 	truthtable = np.zeros([2]*size) #make array based on num of inputs
 	terms = eqn_terms.split('+')
 	true_indices = []

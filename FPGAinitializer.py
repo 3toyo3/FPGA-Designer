@@ -4,8 +4,8 @@ from os.path import exists
 from os.path import getsize
 from FPGAstructure import *
 from logic_synthesizer import *
-import synthesis_engine as sy
-import synthesis_engine6 as sy6
+#import synthesis_engine as sy
+#import synthesis_engine6 as sy6
 
 # This program sets up the FPGA based on user input
 
@@ -117,9 +117,9 @@ def basic_prompt(word):
 	while True:
 		print("Do you want the FPGA to be {}?".format(word))
 		user_input = input("A: Yes  B: No")
-		if user_input is 'A':
+		if user_input == 'A':
 			user_input = True
-		elif user_input is 'B':
+		elif user_input == 'B':
 			user_input = False
 		else:
 			print("Please pick option A or B.o")
