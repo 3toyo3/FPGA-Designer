@@ -7,6 +7,8 @@ from logic_synthesizer import *
 
 # This program sets up the FPGA based on user input
 
+#TODO partial connections, integrate splitter, FPGA recreation, bitstream
+
 def check_file(filename):
 	file_exists = exists(filename)
 	return file_exists
@@ -101,8 +103,12 @@ def get_equations():
 			print("File {} doesnt exist.".format(blif_file_path))
 			print("Please try again.")
 	for line in lines_list:
-		eqn = line.strip() #remove \n
-		equations.append(eqn)
+		if line.startswith('#'):
+			pass
+		else:
+			eqn = line.replace(" ","")
+			eqn = eqn.strip() #remove \n
+			equations.append(eqn)
 	return equations
 
 def basic_prompt(word):
@@ -117,28 +123,45 @@ def basic_prompt(word):
 			print("Please pick option A or B.o")
 	return user_input
 
-#integration sorta
-def craft_new_FPGA(): #TODO partial equations
-	#TODO clean equations
+#integration
+def craft_new_FPGA( LUTS_num, LUT_type, connect_type, connections, input_num, output_num, equations): #TODO partial equations
 	minimized=basic_prompt("minimized")
 	if minimized:
-		#textToArray
-		#minimize
+		equations_arrays=textToArray(equations)
+		equations=minimize_equations(equations_arrays)
+	equations_backup = equations[:] #makes a deep copy just in case
 	factored=basic_prompt("factored")
 	if factored:
-		#factor2
-	#substituition
+		equations=toFactorer(equations) #changes string format
+		equations=mutual_factor(equations)
+	subs=basic_prompt("substituted")
+	if subs:
+		equations=substituition(equations)
+	equations=toSplitter(equations) #changes string format
+	#TODO split
 	if LUT_type == 4:
+		print("LUT4")
 		#LUT4
-	elseif LUT_type == 6:
+	elif LUT_type == 6:
+		print("LUT6")
 		#LUT6
-	#final equaitons
 	#TODO partial equations
-	#compare to LUTnum
-	#FPGA using input_num
-	#FPGA using output_num
-	#for each equation in FPGA
-		#put in
+	#At this point, you have the final equations for assignment
+	if LUTS_num < len(equations):
+		print("This FPGA doesn't have enough LUTS. Using minimized equations instead.")
+		equations = equations_backup
+		if LUTS_num < len(equations):
+			print("This FPGA still doesn't have enough LUTS.")
+			print("Ending program...")
+			sys.exit()
+
+	FPGA1 = FPGA(input_num)
+	FPGA1.set_LUTS(equations)
+	if connect_type == 2: #partial
+		FPGA1.set_connections(connections) #TODO
+	FPGA1.updateOutputs(output_num)
+	FPGA1.updateInputs()
+	return FPGA1
 
 #TODO
 #def recraft_FPGA():
@@ -205,8 +228,7 @@ def main():
 		input_num, output_num = getIO()
 		equations = get_equations()
 
-		#craft FPGA globally
-		#fpgaDesign=FPGA()
+		FPGA1 = create_new_FPGA(LUTS_num, LUT_type, connect_type, connections, input_num, output_num, equations)
 
 	#================User output
 	key = 'i'
@@ -248,7 +270,7 @@ def main():
 			if 'total_LUTS' in locals():
 				print("% of LUT: {}".format((used_LUTS/total_LUTS) * 100)) #luts / connections of nodes
 			else:
-				print("% of LUT: {} used".format(used_LUTS)
+				print("% of LUT: {} used".format(used_LUTS))
 			print("% of connections: {}".format((used_connections/total_connection) * 100)) #number of connections
 			bitstream_exists=check_file(bitstream_file)
 			if bitstream_exists:

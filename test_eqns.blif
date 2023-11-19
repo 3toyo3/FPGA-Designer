@@ -1,5 +1,6 @@
 F= AB+ABC+C
 G= AB+C
-H= A'C+CD
+H= A'C'+CD
 K= AB+C+CD
 J= ABC+ABD
+P= A'B'C'+D

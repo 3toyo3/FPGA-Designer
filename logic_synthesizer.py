@@ -1,99 +1,82 @@
 import numpy as np
-#from minimize import *
+from minimize import *
 
-#TODO allow for options on factor level and minimization
-#TODO convert for factoring and splitting
-
-# TODO check this
 # Takes a file with list of equations and outputs a dictionary of each equation represented as a MD array
-def textToArray(filename):
+def textToArray(equations):
 	names = {}
 
-	# check if exists : already done in initializer
-	with open(filename, "r") as file:
-		lines = file.readlines()
-	file.close()
+	for eqn in equations:
+		print(eqn)
+		seperate_formula=eqn.split("=")
+		eqn_terms=seperate_formula[1]
+		print(seperate_formula)
+		output=seperate_formula[0]
 
-	for line in lines:
-		if line.startswith('#'):
-			pass #comments allowed :)
-		else:
-			eqn=line.replace(" ","")
-			eqn=eqn.rstrip()
-			#get output
-			print(eqn)
-			seperate_formula=eqn.split("=")
-			eqn_terms=seperate_formula[1]
-			print(seperate_formula)
-			output=seperate_formula[0]
+		#store variables in unique string
+		equation_ID=[output]
+		unique_inputs=[]
+		for char in eqn:
+			if char not in unique_inputs and char.isalpha():
+				if char not in output:
+					unique_inputs.append(char)
+		#inputs=",".join(unique_inputs)
+		equation_ID=equation_ID+unique_inputs
+		equation_ID=",".join(equation_ID)
+		inputs=tuple(unique_inputs)
 
-			#store variables in unique string
-			equation_ID=[output]
-			unique_inputs=[]
-			for char in line:
-				if char not in unique_inputs and char.isalpha():
-					if char not in output:
-						unique_inputs.append(char)
-			#inputs=",".join(unique_inputs)
-			equation_ID=equation_ID+unique_inputs
-			equation_ID=",".join(equation_ID)
-			inputs=tuple(unique_inputs)
-
-			#make truth table
-			size=len(unique_inputs)
-			truthtable = np.zeros([2]*size) #make array based on num of inputs
-			terms = eqn_terms.split('+')
-			true_indices = []
-			for term in terms:
-				#print(true_indices)
-				truth_value = []
-				print(term)
-				for i in range(len(inputs)):
-					truth_value.append('*') #initialize array with *
-				for i in range(len(term)): #Find if ' or normal
-					char = term[i]
-					print(char)
-					if char == "'":
-						char = term[i-1]
-						place = inputs.index(char)
-						truth_value[place] = 0
-						#print("Zero")
-					else:
-						place = inputs.index(char)
-						truth_value[place] = 1
-						#print("One")
-				if len(truth_value) != len(inputs):
-					print("Not matching in truth table generation")
-				if '*' in truth_value:
-					print("Dont care")
-					new_indices = dont_cares(truth_value)
-					print(new_indices)
-					for item in new_indices:
-						#print("Item")
-						#print(item)
-						true_indices.append(tuple(item))
+		#make truth table
+		size=len(unique_inputs)
+		truthtable = np.zeros([2]*size) #make array based on num of inputs
+		terms = eqn_terms.split('+')
+		true_indices = []
+		for term in terms:
+			#print(true_indices)
+			truth_value = []
+			print(term)
+			for i in range(len(inputs)):
+				truth_value.append('*') #initialize array with *
+			for i in range(len(term)): #Find if ' or normal
+				char = term[i]
+				print(char)
+				if char == "'":
+					char = term[i-1]
+					place = inputs.index(char)
+					truth_value[place] = 0
+					#print("Zero")
 				else:
-					new_indices = truth_value
+					place = inputs.index(char)
+					truth_value[place] = 1
+					#print("One")
+			if len(truth_value) != len(inputs):
+				print("Not matching in truth table generation")
+			if '*' in truth_value:
+				print("Dont care")
+				new_indices = dont_cares(truth_value)
+				print(new_indices)
+				for item in new_indices:
+					#print("Item")
+					#print(item)
 					true_indices.append(tuple(item))
-			for indice in np.ndindex(truthtable.shape):
-				if indice in true_indices:
-					truthtable[indice] = 1
-					print("Term marked as true found for {}".format(equation_ID))
-			names[equation_ID]=truthtable
+			else:
+				new_indices = truth_value
+				true_indices.append(tuple(item))
+		for indice in np.ndindex(truthtable.shape):
+			if indice in true_indices:
+				truthtable[indice] = 1
+				print("Term marked as true found for {}".format(equation_ID))
+		names[equation_ID]=truthtable
 	return names
 
-#Takes a dictionary with equations' MD arrays, and outputs list of minimized equations
-def minimize(names):
+#Takes a dictionary with equations' MD arrays, and outputs list of minimized equations, references miminize.py
+def minimize_equations(names):
 	equations=[]
 	for entry in names:
 		print(entry)
 		truthtable=names[entry]
 		new_string=minimized_sop(truthtable)
 		print(new_string)
-		#TODO Forcefully recreate equation
-
+		#TODO Forcefully recreate equation 
 		equations.append(new_string)
-
 	return equations
 
 #Takes a list of characters, and if any char represents a dont care, expands the list
@@ -102,26 +85,18 @@ def dont_cares(true):
 	none_holder.append(true)
 	clean_holder = []
 	while len(none_holder) > 0:
-		#print("None holder")
-		#print(none_holder)
 		if '*' in none_holder[0]:
 			working = list(none_holder.pop(0))
-			#print("Working")
-			#print(working)
 			none_place = working.index('*')
 			working[none_place] = 0
 			working_zero=tuple(working)
-			#print(working)
 			none_holder.append(working_zero)
-			#print(none_holder)
 			working[none_place] = 1
 			working_one=tuple(working)
-			#print(working)
 			none_holder.append(working_one)
 		else:
 			working = none_holder.pop(0)
 			clean_holder.append(working)
-	#print("Clean")
 	return clean_holder
 
 # From a list of equations, checks if they are factorable and outputs a list of factored equations.
@@ -132,7 +107,7 @@ def substituition(equations):
 	#mutable
 	for eqn in equations: #puts every equation in dictionary
 		seperate_eqn = eqn.split("=")
-		eqns_dict[seperate_eqn[0]]=seperate_eqn[1] 
+		eqns_dict[seperate_eqn[0]]=seperate_eqn[1]
 	eqns_dict_new = eqns_dict.copy()
 	#print(eqns_dict_new)
 	#is equation referenced?
@@ -145,7 +120,8 @@ def substituition(equations):
 					print("Cool") #idk not necessarily anything currently
 	#can I completely substitute an equation?
 	for entry1 in eqns_dict:
-		substitute_terms=eqns_dict[entry1].split("+") #All these terms must exist in....
+		substitute_terms=eqns_dict[entry1].split("+") #All these terms must exist in.... 
+		### TODO take out factor parts
 		#print("Substitute")
 		#print(substitute_terms)
 		for entry2 in eqns_dict:
@@ -361,9 +337,37 @@ def factor(terms, common):
 					new_term.append(term[i])
 		#add to list
 		new_terms.append(''.join(new_term))
-
 	#craft string
 	working_str = '+'.join(new_terms)
 	working_str = common+"("+working_str+")"
 	working_str = working_str + "+".join(new_terms_no_factor)
 	return working_str
+
+#converts equations so that they can be split properly (a -> A')
+def toSplitter(equations):
+	new_equations = []
+	for eqn in equations:
+		new_eqn = []
+		for char in eqn:
+			if char.isalpha() and char.islower():
+				new_eqn.append(char.upper())
+				new_eqn.append("'")
+			else:
+				new_eqn.append(char)
+		new_eqn=''.join(new_eqn)
+		new_equations.append(new_eqn)
+	return new_equations
+
+#converts equations so that they can be factored properly (A' -> a)
+def toFactorer(equations):
+	new_equations = []
+	for eqn in equations:
+		new_eqn=[]
+		for i in range(len(eqn)):
+			if eqn[i] == "'":
+				new_eqn[-1]=new_eqn[-1].lower()
+			else:
+				new_eqn.append(eqn[i])
+		new_eqn=''.join(new_eqn)
+		new_equations.append(new_eqn)
+	return new_equations

@@ -7,26 +7,21 @@ class FPGA:
 	LUTS = []
 	inputs = []
 	outputs = []
+ 
+	def __init__(self, input_num=None):
+		if input_num is None:
+			self.FPGA_graph = nx.DiGraph()
+		else:
+			self.FPGA_graph = nx.DiGraph()
+			self.inputs = [None]*input_num
+			for i in range(len(self.inputs)):
+				node_name = "I"+str(i)
+				self.FPGA_graph.add_node(node_name,date=None)
 
-	def __init__(self, input_num):
-		self.FPGA_graph = nx.DiGraph()
-		#create initial nodes
-		self.inputs = [None]*input_num
-		for i in range(len(self.inputs))
-			node_name = "I"+str(i)
-			self.FPGA_graph.add_node(node_name,date=None)
 
-	#initialize array
-	#def __init__(self, input_num, output_num, LUTS_num):
-	#	self.FPGA_graph = nx.DiGraph()
-	#	self.inputs.append(None)*input_num
-	#	self.outputs.append(None)*output_num
-	#	self.LUTs.append(None)*LUTS_num
-
-	#bitstream construction
-	def __init__(self, LUTS, connects)
-		self.FPGA_graph = nx.DiGraph()
-		#graph.add_edges_from([("root", "a"), ("a", "b"), ("a", "e"), ("b", "c"), ("b", "d"), ("d", "e")])
+	#	#graph.add_edges_from([("root", "a"), ("a", "b"), ("a", "e"), ("b", "c"), ("b", "d"), ("d", "e")])
+	def connect_LUTS(self, connections):
+		self.FPGA_graph.add_edges_from(connections)
 
 	def connect_LUT(self, nodeFrom, nodeTo):
 		self.FPGA_graph.add_edges_from(nodeFrom, nodeTo)
@@ -38,41 +33,55 @@ class FPGA:
 		return self.FPGA_graph.number_of_edges()
 
 	def get_lut_size(self): #samples three LUTS for the input size
-		node1=self.LUT[0]
-		connections_of_1=list(self.FPGA_graph.predecessors(node1))
-		node2=self.output[0]
-		connections_of_2=list(self.FPGA_graph.predecessors(node2))
-		node3=self.LUT[1]
-		connections_of_3=list(self.FPGA_graph.predecessors(node3))
-		connection_count=max(connections_of_3, connections_of_2, connections_of_1)
+		connection_count = 0
+		if len(list(self.FPGA_graph.nodes())) > len(self.inputs): #checks assumption of above comment
+			node1=self.LUT[0]
+			connections_of_1=list(self.FPGA_graph.predecessors(node1)) #only checks nodes with inputs
+			node2=self.output[0]
+			connections_of_2=list(self.FPGA_graph.predecessors(node2))
+			node3=self.LUT[1]
+			connections_of_3=list(self.FPGA_graph.predecessors(node3))
+			connection_count=max(connections_of_3, connections_of_2, connections_of_1)
 		return connection_count
 
 	def get_num_luts(self):
 		num_nodes = self.FPGA_graph.number_of_nodes()
 		luts_num = num_nodes - len(self.input)
-		if luts_num = len(self.LUTS):
+		if luts_num == len(self.LUTS):
 			return luts_num
 		else:
 			return len(self.LUTS)
- 
-	# takes a list of equations, assume indexed as to where they shuld go
+
+	def get_nodes(self):
+		nodes=[]
+		for node, data in self.FPGA_graph.nodes(data=True):
+			nodes.append(f"Node {node}: {data}")
+		return nodes
+
+	def get_node_before(self, node_name):
+		return list(self.FPGA_graph.predecessors(node_name ))
+
+	# takes a list of equations, assume indexed as to where they should go
 	# assumes inputs exist
 	def set_LUTS(self, equations):
 		node_names=[]
 		node_connects=[]
 
-		for i in range(len(equations)):
-			equation=equations[i]
+		for equation in equations:
 			eqn = equation.split("=")
 			node_name=eqn[0]
-			input_nodes=eqnToNode(eqn[1])
-			connect_nodes[(node, node_name) for node in nodes]
-			node_names[i]=node_name
-			node_connects=[i]
-p		for i in range(len(node_names))
-			self.FPGA_graph.create_node(node_names[i], data=equations[i])
+			input_nodes=self.eqnToNodes(eqn[1])
+			connect_nodes = []
+			for node in input_nodes:
+				connection=[node, node_name]
+				connect_nodes.append(connection)
+			print("Node name: {}".format(node_name))
+			print(connect_nodes)
+			node_names.append(node_name)
+			node_connects.append(connect_nodes)
+		for i in range(len(node_names)):
+			self.FPGA_graph.add_node(node_names[i], data=equations[i])
 			self.FPGA_graph.add_edges_from(node_connects[i])
-		#TODO reorganize node_name from connections
 		for node in node_names:
 			self.LUTS.append(node)
 
@@ -85,13 +94,16 @@ p		for i in range(len(node_names))
 		self.LUTS[num]=output_eqn
 		self.FPGA_graph.add_node(output_eqn, data=equation)
 
+		connect_nodes=[]
 		nodes = eqnToNodes(input_eqn)
-		connect_nodes[(node, output_eqn) for node in nodes]
+		for node in nodes:
+			connection=[node, output_eqn]
+			connect_nodes.append(connection)
 		self.FPGA_graph.add_edges_from(connect_nodes)
 
 	def get_LUTS(self): #returns all nodes
 		eqns = []
-		for node in self.LUTS
+		for node in self.LUTS:
 			eqn=self.FPGA_graph.nodes[node]
 			eqns.append(eqn)
 		return eqns
@@ -123,7 +135,6 @@ p		for i in range(len(node_names))
 		self.FPGA_graph.create_node(node_name, data=input_value)
 
 	def get_outputs(self):
-		updateOutputs() #check if any are missing
 		return self.outputs
 
 	def set_outputs(self, outputs_list):
@@ -146,24 +157,49 @@ p		for i in range(len(node_names))
 		#else:
 		#	self.FPGA_graph.create_node(output_value)
 
-	def show_FPGA(self): #TODO display inputs as Io, I2, etc
+	def show_FPGA(self):
 		plot.figure(figsize=(8,6)) #optional
-		pos = nx.spring_layout(self.FPGA_graph) #May need to change layout
-		node_labels = {node: self.FPGA_graph.nodes[node] for node in self.FPGA_nodes()}
+		pos = nx.shell_layout(self.FPGA_graph)
+		node_labels = {node: self.FPGA_graph.nodes[node]['data'] for node in self.FPGA_graph.nodes()}
 		nx.draw(self.FPGA_graph, pos, with_labels=True, labels=node_labels, node_size=500, node_color="skyblue",font_weight="bold",arrows=False)
 		plot.title("FPGA Design")
 		plot.show()
 
 	#Takes a string input of terms only, and outputs set of node names
-	def eqnToNodes(equation):
+	def eqnToNodes(self,equation):
 		nodes = set()
 		for char in equation:
 			if char.isalpha():
 				nodes.add(char)
 		return nodes
 
-	def updateOutputs():
+	def updateOutputs(self): 
 		output_nodes = [node for node in self.FPGA_graph.nodes() if not any(self.FPGA_graph.successors(node))]
 		for node in output_nodes:
 			if node not in self.outputs:
 				self.outputs.append(node)
+
+	def updateInputs(self):
+		input_nodes = []
+		input_nodeless = [] #created forcefully by adding edges etc.
+
+		nodes_no_inputs = [node for node in self.FPGA_graph.nodes() if not any(self.FPGA_graph.predecessors(node))]
+		for node in nodes_no_inputs:
+			if 'I' in node:
+				input_nodes.append(node)
+			else:
+				input_nodeless.append(node)
+		input_nodes.sort()
+		for i in range(len(input_nodeless)):
+			input_value = input_nodeless[i]
+			if len(input_nodes) == 0:
+				input_node = "I"+str(i)
+			else:
+				input_node = input_nodes.pop(0)
+			self.FPGA_graph.add_node(input_node,data=input_value)
+			# move connections
+			successors = list(self.FPGA_graph.successors(input_value))
+			self.FPGA_graph.remove_node(input_value)
+			for successor in successors:
+				self.FPGA_graph.add_edge(input_node, successor)
+		self.inputs = input_nodeless + input_nodes

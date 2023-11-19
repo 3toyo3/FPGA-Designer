@@ -1,0 +1,11 @@
+#!0 independednt SOP formulas non canonical that are a function of 4 variables each
+F=AB+CD
+G=AB'C+A'BD
+H=A+B+C+D
+J=A'BC'D+AB'CD'
+K=A'B'C+ABC'+A'BCD
+L= AB'C'D+A'BC+B'CD
+M= AB'C+A'BC'D
+N= A'BC+AC'D+B'CD'
+O= ABD+A'B'CD'
+P= A'BC'+AB'CD'

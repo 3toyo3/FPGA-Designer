@@ -285,13 +285,13 @@ def minimized_sop(truthtable):
 
 #Testing
 #********************************************************************************************************
-truthtable = np.zeros((2,2,2))
-truthtable[0][0][0]=1
-truthtable[0][0][1]=1
-truthtable[0][1][0]=1
+#truthtable = np.zeros((2,2,2))
+#truthtable[0][0][0]=1
+#truthtable[0][0][1]=1
+#truthtable[0][1][0]=1
 
-truthtable[1][1][0]=1
-truthtable[1][1][1]=1
+#truthtable[1][1][0]=1
+#truthtable[1][1][1]=1
 
-print(minimized_sop(truthtable))
+#print(minimized_sop(truthtable))
 
