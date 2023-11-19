@@ -145,7 +145,7 @@ def craft_new_FPGA( LUTS_num, LUT_type, connect_type, connections, input_num, ou
 	elif LUT_type == 6:
 		print("LUT6")
 		#LUT6
-	#TODO partial equations
+	#TODO partial equations here or below..
 	#At this point, you have the final equations for assignment
 	if LUTS_num < len(equations):
 		print("This FPGA doesn't have enough LUTS. Using minimized equations instead.")
@@ -155,11 +155,12 @@ def craft_new_FPGA( LUTS_num, LUT_type, connect_type, connections, input_num, ou
 			print("Ending program...")
 			sys.exit()
 
-	FPGA1 = FPGA(input_num)
+	FPGA1 = FPGA()
+	FPGA1.initializeIO(input_num, output_num)
 	FPGA1.set_LUTS(equations)
 	if connect_type == 2: #partial
 		FPGA1.set_connections(connections) #TODO
-	FPGA1.updateOutputs(output_num)
+	FPGA1.updateOutputs()
 	FPGA1.updateInputs()
 	return FPGA1
 

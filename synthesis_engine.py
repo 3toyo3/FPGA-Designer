@@ -462,13 +462,4 @@ def split(function):
 #Testing
 create_LUTs(8)
 split("AB'(C+D)+A(D'+E'FG)")
-print_LUTs()
-
-
-
-
-
-
-
-
- 
+print_LUTs() 

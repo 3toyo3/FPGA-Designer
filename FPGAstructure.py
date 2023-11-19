@@ -5,7 +5,7 @@ import matplotlib.pyplot as plot
 class FPGA:
 	FPGA_graph = []
 	LUTS = []
-	inputs = []
+ 	inputs = []
 	outputs = []
  
 	def __init__(self, input_num=None):
@@ -75,8 +75,8 @@ class FPGA:
 			for node in input_nodes:
 				connection=[node, node_name]
 				connect_nodes.append(connection)
-			print("Node name: {}".format(node_name))
-			print(connect_nodes)
+			#print("Node name: {}".format(node_name))
+			#print(connect_nodes)
 			node_names.append(node_name)
 			node_connects.append(connect_nodes)
 		for i in range(len(node_names)):
@@ -132,7 +132,7 @@ class FPGA:
 		#	self.inputs.append(old)
 		self.inputs[input_place] = input_value
 		node_name = "I"+str(input_place)
-		self.FPGA_graph.create_node(node_name, data=input_value)
+		self.FPGA_graph.create_node(node_name, data=input_value) #TODO potential to overwrite here
 
 	def get_outputs(self):
 		return self.outputs
@@ -149,7 +149,7 @@ class FPGA:
 	def set_output(self, output_place, output_value):
 		if 0 <= output_place < len(self.outputs) and self.outputs[output_place] is not None:
 			old = self.outputs[output_place]
-			self.outputs.append(old)
+			self.outputs.append(old) #TODO potential to overwrite here
 		self.outputs[output_place]=output_value
 		self.FPGA_graph.create_node(output_value)
 		#if self.FPGA_graph.has_node(output_value):
@@ -173,11 +173,20 @@ class FPGA:
 				nodes.add(char)
 		return nodes
 
-	def updateOutputs(self): 
+	def initializeIO(input_num, output_num)
+		self.inputs = [None]*input_num
+		self.outputs = [None] * output_num
+
+	def updateOutputs(self):
 		output_nodes = [node for node in self.FPGA_graph.nodes() if not any(self.FPGA_graph.successors(node))]
-		for node in output_nodes:
-			if node not in self.outputs:
-				self.outputs.append(node)
+
+		for i in range(len(self.outputs)):
+			node = output_nodes.pop(0)
+			self.outputs[i]=node
+		if len(output_nodes) != 0:
+			print("Not enough external output nodes in the FPGA.")
+			print("Recommend redesigning the FPGA for accurate results")
+			print("These equations would need {} total outputs".format(len(output_nodes)+len(self.outputs)))
 
 	def updateInputs(self):
 		input_nodes = []
@@ -202,4 +211,10 @@ class FPGA:
 			self.FPGA_graph.remove_node(input_value)
 			for successor in successors:
 				self.FPGA_graph.add_edge(input_node, successor)
-		self.inputs = input_nodeless + input_nodes
+		new_inputs = input_nodeless + input_nodes
+		for i in len(range(self.inputs):
+			self.inputs[i] = new_inputs.pop(0)
+		if len(new_inputs) != 0:
+			print("Not enough external inputs in the FPGA.")
+			print("Recommend redesigning the FPGA for accurate results")
+			print("These equations would need {} total inputs.".format(len(self.inputs)+len(new_inputs)))
