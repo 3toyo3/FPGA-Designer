@@ -4,10 +4,12 @@ from os.path import exists
 from os.path import getsize
 from FPGAstructure import *
 from logic_synthesizer import *
+import synthesis_engine as sy
+import synthesis_engine6 as sy6
 
 # This program sets up the FPGA based on user input
 
-#TODO partial connections, integrate splitter, FPGA recreation, bitstream
+#TODO partial connections, bitstream
 
 def check_file(filename):
 	file_exists = exists(filename)
@@ -125,6 +127,7 @@ def basic_prompt(word):
 
 #integration
 def craft_new_FPGA( LUTS_num, LUT_type, connect_type, connections, input_num, output_num, equations): #TODO partial equations
+	#optimizes equations
 	minimized=basic_prompt("minimized")
 	if minimized:
 		equations_arrays=textToArray(equations)
@@ -138,14 +141,14 @@ def craft_new_FPGA( LUTS_num, LUT_type, connect_type, connections, input_num, ou
 	if subs:
 		equations=substituition(equations)
 	equations=toSplitter(equations) #changes string format
-	#TODO split
 	if LUT_type == 4:
 		print("LUT4")
-		#LUT4
+		eqns = sy.assign_LUTS(eqns,LUTS_num)
 	elif LUT_type == 6:
 		print("LUT6")
-		#LUT6
+		eqns = sy.assign_LUTS(eqns, LUTS_num)
 	#TODO partial equations here or below..
+
 	#At this point, you have the final equations for assignment
 	if LUTS_num < len(equations):
 		print("This FPGA doesn't have enough LUTS. Using minimized equations instead.")
@@ -164,8 +167,14 @@ def craft_new_FPGA( LUTS_num, LUT_type, connect_type, connections, input_num, ou
 	FPGA1.updateInputs()
 	return FPGA1
 
-#TODO
-#def recraft_FPGA():
+#TODO assuming bitstream parser returns a list of equations...
+def recraft_FPGA(equations):
+	FPGA1 = FPGA()
+	FPGA1.set_LUTS(equations)
+	FPGA1.updateOutputs()
+	FPGA1.updateInputs()
+	return FPGA1
+
 
 def output_prompt():
 	print("FPGA Display Options:")
@@ -214,8 +223,8 @@ def main():
 		rawbits = rawbits.split(',')
 		if len(rawbits) == 10:
 			bits = rawbits
-			#TODO parse bitstream
-			#TODO craft FPGA here
+			#TODO parse bitstream for equations
+			FPGA1 = recraft_FPGA(equations)
 		else:
 			print("This bitstream was improperly formatted. Closing program.")
 			sys.exit()

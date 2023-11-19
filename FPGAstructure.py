@@ -7,6 +7,7 @@ class FPGA:
 	LUTS = []
  	inputs = []
 	outputs = []
+	initialized=False
  
 	def __init__(self, input_num=None):
 		if input_num is None:
@@ -176,13 +177,18 @@ class FPGA:
 	def initializeIO(input_num, output_num)
 		self.inputs = [None]*input_num
 		self.outputs = [None] * output_num
+		self.initialized=True
 
 	def updateOutputs(self):
 		output_nodes = [node for node in self.FPGA_graph.nodes() if not any(self.FPGA_graph.successors(node))]
 
-		for i in range(len(self.outputs)):
-			node = output_nodes.pop(0)
-			self.outputs[i]=node
+		if self.initialized: #If output num was used aka new design
+			for i in range(len(self.outputs)):
+				node = output_nodes.pop(0)
+				self.outputs[i]=node
+		else: #From bitstream
+			for out in output_nodes:
+				self.outputs.append(out )
 		if len(output_nodes) != 0:
 			print("Not enough external output nodes in the FPGA.")
 			print("Recommend redesigning the FPGA for accurate results")
@@ -212,8 +218,12 @@ class FPGA:
 			for successor in successors:
 				self.FPGA_graph.add_edge(input_node, successor)
 		new_inputs = input_nodeless + input_nodes
-		for i in len(range(self.inputs):
-			self.inputs[i] = new_inputs.pop(0)
+		if self.initialized: #If inputnum and output num used AKA new design
+			for i in len(range(self.inputs):
+				self.inputs[i] = new_inputs.pop(0)
+		else: #If crafted from bitstream
+			for inp in new_inputs:
+				self.inputs.append(inp)
 		if len(new_inputs) != 0:
 			print("Not enough external inputs in the FPGA.")
 			print("Recommend redesigning the FPGA for accurate results")
