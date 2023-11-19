@@ -1,5 +1,5 @@
-from logic_synthesizer import dont_cares
-
+import numpy as np
+# Takes string of equation and outputs a truth table as a MD array
 def eqnToArray(eqn)
 	print(eqn)
 	seperate_formula=eqn.split("=")
@@ -55,3 +55,23 @@ def eqnToArray(eqn)
 			truthtable[indice] = 1
 			print("{} term marked as true".format(indice))
 	return truthtable
+	
+#Takes a list of characters, and if any char represents a dont care, expands the list
+def dont_cares(true):
+	none_holder = []
+	none_holder.append(true)
+	clean_holder = []
+	while len(none_holder) > 0:
+		if '*' in none_holder[0]:
+			working = list(none_holder.pop(0))
+			none_place = working.index('*')
+			working[none_place] = 0
+			working_zero=tuple(working)
+			none_holder.append(working_zero)
+			working[none_place] = 1
+			working_one=tuple(working)
+			none_holder.append(working_one)
+		else:
+			working = none_holder.pop(0)
+			clean_holder.append(working)
+	return clean_holder
