@@ -91,18 +91,18 @@ def get_IO():
 def get_equations():
 	equations = []
 	while True:
-		print("Please input blif file for the logic expressions")
-		blif_file_path=input()
-		if exists(blif_file_path):
-			if blif_file_path[-5:]==".blif":
-				with open(blif_file_path, 'r') as file:
+		print("Please input eqns file for the logic expressions")
+		eqns_file_path=input()
+		if exists(eqns_file_path):
+			if eqns_file_path[-5:]==".eqns": #check file extension 
+				with open(eqns_file_path, 'r') as file:
 					lines_list=file.readlines()
 				break
 			else:
-				print("Please choose a blif file.")
+				print("Please choose a eqns file.")
 			break
 		else:
-			print("File {} doesnt exist.".format(blif_file_path))
+			print("File {} doesnt exist.".format(eqns_file_path))
 			print("Please try again.")
 	for line in lines_list:
 		if line.startswith('#'):
