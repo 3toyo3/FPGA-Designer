@@ -1,10 +1,11 @@
 from LUT import LUT
 import numpy as np
+import os
 
 LUTs=[]
 first_unused_lut=0
-letters = ["A","B","C","D","E","F","G","H","I","J","K","L","M"]
-lut_symbols = ["a","b","c","d","e","f","g","h","i","j","k","l","m","n"]
+letters = ["A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"]
+lut_symbols = ["a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z"]
 
 #This function initializes a desired number of LUTS
 #*********************************************************************************************************************
@@ -24,7 +25,7 @@ def create_LUTs(num_luts):
 #*********************************************************************************************************************
 
 
-#This funnction prints infomration about the LUTs
+#This function prints information about the LUTs
 #*********************************************************************************************************************
 def print_LUTs():
 
@@ -182,7 +183,7 @@ def split(function):
     if num_distinct_variables(function)[0]==1:
         return ""
     
-    #Base case: function contains 2-4 inputs, can now implement on LUT
+    #Base case: function contains 4 inputs, can now implement on LUT
     elif num_distinct_variables(function)[0]==4:
         
         #Build the LUT
@@ -453,13 +454,91 @@ def split(function):
 #*********************************************************************************************************************
 
 
+def to_string(array):
+    return_string=''
+    for i in range(len(array)):
+        return_string+=str(array[i])
+    return return_string
+
+
+def write_bitstream():
+    global LUTs
+    global first_unused_lut
+
+    #Initialize the bitstream
+    bitstream=''
+
+    #Walk through each LUT 
+    for i in range(first_unused_lut):
+
+        #First handle the code for the variables
+        variables=LUTs[i].inputs
+
+        #52 bits for external inputs and their complements, 26 bits for internal connections, all times 4
+        inputcode=np.zeros(312,np.int8)
+        
+        
+        #Walk through each variable
+        for j in range(len(variables)):
+
+            
+            index=np.where(letters==variables[j][0])[0]
+
+            if not(index == -1):
+                index*=2
+                if len(variables[j]) >1 and variables[j][1]=="'":
+                    index+=1
+            else:
+                index=52+np.where(lut_symbols==variables[j][0])[0]
+        
+            inputcode[78*i+index]=1
+
+        bitstream+=to_string(inputcode)
+
+    f = open("bitstream.txt", "w")
+    f.write(bitstream)
+    f.close()
     
+        
+
+
+        #Next, handle the function implemented
+
+
+
+
+
+
+
+#Main Function
+#*********************************************************************************************************************
+def assign_LUTs(functions,num_luts):
+    create_LUTs(num_luts)
+    for i in range(len(functions)):
+        split(functions[i][2:])
+    print_LUTs()
+#*********************************************************************************************************************    
         
 
 #*********************************************************************************************************************
 
 
 #Testing
+<<<<<<< HEAD
 create_LUTs(8)
 split("AB'(C+D)+A(D'+E'FG)")
 print_LUTs() 
+=======
+test=["X=A+B+C+D+E","G=ABCD"]
+assign_LUTs(test,3)
+write_bitstream()
+
+
+
+
+
+#make this file for 6 input LUTs
+#LUT connectivity?
+#bitstream?
+
+
