@@ -63,7 +63,12 @@ def num_distinct_variables(function):
         #If a letter has not been used yet, it is a distinct variable
         if (letters.count(function[i]) or lut_symbols.count(function[i])) and not(variables_used.count(function[i])):
             count_variables+=1
-            variables_used.append(function[i])
+
+            conditional_prime=''
+            if not(i==len(function)-1) and function[i+1]=="'":
+                conditional_prime="'"
+
+            variables_used.append(function[i]+conditional_prime)
     
     return count_variables,variables_used
 #*********************************************************************************************************************
@@ -468,30 +473,39 @@ def write_bitstream():
     #Initialize the bitstream
     bitstream=''
 
+    
+
     #Walk through each LUT 
     for i in range(first_unused_lut):
 
         #First handle the code for the variables
         variables=LUTs[i].inputs
+        
 
-        #52 bits for external inputs and their complements, 26 bits for internal connections, all times 4
-        inputcode=np.zeros(312,np.int8)
+        #52 bits for external inputs and their complements, 26 bits for internal connections
+        inputcode=np.zeros(78,np.int8)
         
         
         #Walk through each variable
         for j in range(len(variables)):
 
+            try:
+                index=letters.index(variables[j][0])
+            except ValueError:
+                index=-1
             
-            index=np.where(letters==variables[j][0])[0]
+        
+
 
             if not(index == -1):
                 index*=2
                 if len(variables[j]) >1 and variables[j][1]=="'":
                     index+=1
+                
             else:
-                index=52+np.where(lut_symbols==variables[j][0])[0]
+                index=52+lut_symbols.index(variables[j][0])
         
-            inputcode[78*i+index]=1
+            inputcode[index]=1
 
         bitstream+=to_string(inputcode)
 
@@ -503,7 +517,6 @@ def write_bitstream():
 
 
         #Next, handle the function implemented
-
 
 
 
@@ -524,12 +537,7 @@ def assign_LUTs(functions,num_luts):
 
 
 #Testing
-<<<<<<< HEAD
-create_LUTs(8)
-split("AB'(C+D)+A(D'+E'FG)")
-print_LUTs() 
-=======
-test=["X=A+B+C+D+E","G=ABCD"]
+test=["X=A'+B+C+D+E","G=ABCD"]
 assign_LUTs(test,3)
 write_bitstream()
 
@@ -540,5 +548,10 @@ write_bitstream()
 #make this file for 6 input LUTs
 #LUT connectivity?
 #bitstream?
+
+
+
+
+
 
 
