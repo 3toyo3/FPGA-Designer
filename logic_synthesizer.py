@@ -59,7 +59,7 @@ def textToArray(equations):
 					true_indices.append(tuple(item))
 			else:
 				new_indices = truth_value
-				true_indices.append(tuple(item))
+				true_indices.append(tuple(new_indices))
 		for indice in np.ndindex(truthtable.shape):
 			if indice in true_indices:
 				truthtable[indice] = 1
@@ -171,12 +171,15 @@ def mutual_factor(equations): #TODO make sure works w multiple '
 		eqn_terms = common_literals_per_eqn[entry]
 		common_literals_per_eqn[entry]=find_common_literals(eqn_terms)
 
+	#print("After finding common literals")
+	#print(common_literals_per_eqn)
+
 	#Remove any equations that cant be factored
 	eqns_to_remove = [key for key, value in common_literals_per_eqn.items() if isinstance(value, dict) and not value]
 	for eqn in eqns_to_remove:
     		common_literals_per_eqn.pop(eqn)
 
-	print("Common p eqn")
+	print("Common literals in each eqn:")
 	print(common_literals_per_eqn)
 
 	#Check if two equations have common literals
@@ -197,18 +200,20 @@ def mutual_factor(equations): #TODO make sure works w multiple '
 	for term in mass_common_terms:
 		mass_common_terms[term] = set(mass_common_terms[term])
 
-	print("Mass")
+	print("Shared common literals and their equations:")
 	print(mass_common_terms)
 
 	# Factor common equations
-	factorsExist = True
+	if len(mass_common_terms)>0:
+		factorsExist = True
+	else:
+		factorsExist = False
 	while factorsExist:
-		most_common_term = max(mass_common_terms, key=lambda x: len(mass_common_terms[x]))
-		print(most_common_term)
+		#most_common_term = max(mass_common_terms, key=lambda x: len(mass_common_terms[x]))
+		most_common_term=get_most_useful(mass_common_terms)
 		common_equations = mass_common_terms.pop(most_common_term)
-		print("Common equations ")
-		print(common_equations)
-
+		print("Most common term: {} and equations: {}".format(most_common_term, str(common_equations)))
+		
 		#TODO make this work for cube-free
 		#Check if the most_common_to_be_factor in other could-be-factors and removes
 		for entry in mass_common_terms: #TODO check this w single?
@@ -233,8 +238,8 @@ def mutual_factor(equations): #TODO make sure works w multiple '
 		for term in not_mass_common_terms_anymore:
 			mass_common_terms.pop(term)
 
-		print("New mass")
-		print(mass_common_terms)
+		#print("New mass")
+		#print(mass_common_terms)
 
 		#Factore each equation that was found to be common
 		for eqn in common_equations:
@@ -242,7 +247,9 @@ def mutual_factor(equations): #TODO make sure works w multiple '
 			#print("Gonna factor - group")
 			#print(terms)
 			#print(most_common_term)
+			#print("In progress mass_factoring of {}".format(eqn))
 			terms = factor(terms, most_common_term)
+			#print()
 			eqns_dict[eqn] = terms
 			common_literals_per_eqn.pop(eqn)
 
@@ -252,20 +259,23 @@ def mutual_factor(equations): #TODO make sure works w multiple '
 			#print("Yer")
 			factorsExist = False
 
+	print("Equations after mass factoring:")
 	print(eqns_dict)
+	print("Equations left to factor:")
 	print(common_literals_per_eqn)
 	# Factor non common by what makes the most impact
 	for entry in common_literals_per_eqn:
-		print(entry)
+		#print(entry)
 		#Find most common term
 		common_terms = common_literals_per_eqn[entry]
-		most_common_term = max(common_terms, key=common_terms.get)
+		#most_common_term = max(common_terms, key=common_terms.get)
+		most_common_term = get_most_useful(common_terms)
 
 		#Factor
 		terms = eqns_dict[entry]
-		print("Gonna factor - alone")
-		print(terms)
-		print(most_common_term)
+		#print("Gonna factor - alone")
+		#print(terms)
+		#print(most_common_term)
 		terms = factor(terms, most_common_term)
 		eqns_dict[entry]= terms
 
@@ -275,19 +285,27 @@ def mutual_factor(equations): #TODO make sure works w multiple '
 		if type(new_terms) is list:
 			new_terms = "+".join(new_terms)
 		eqns_list.append(eqn+"="+new_terms)
+	print("Final equations:")
 	return eqns_list
 
 # From a list of terms, outputs the most common terms as a dictionary
+
+#TODO make it do that it cube free IE dont add in solos
 def find_common_literals(words):
     common_letters = []
     common_series = []
     common_tally = {}
 
+    #print("Finding common literals in {}".format(str(words)))
+    #check each term to another for common letters
     for i in range(len(words)):
         for j in range(i + 1, len(words)):
             common_set = set(words[i]) & set(words[j])
+            #print("Common set")
+            #print(common_set)
             common_letters.extend(common_set)
 
+            #if multiple letters are common, then combine them
             common_sequence = ''.join(
                 letter for letter in words[i] if letter in common_set
             )
@@ -295,20 +313,34 @@ def find_common_literals(words):
                 common_series.append(common_sequence)
 
     common_series = list(set(common_series)) # remove dupes
+    #print("Common_series ")
+    #print(common_series)
 
+    #check each term for if they have a common term, and if so, store which one
+    #this is character based rather than segment based so to catch cases like ab in acb and adb
     for word in words:
         letters = list(word)
+        #print("Working on {}".format(word))
         for i in range(len(common_series)):
             common_term = common_series[i]
             common_letters = list(common_term)
             #print("Looking at {} and {}".format(str(letters), str(common_letters)))
-            if all(item in letters for item in common_letters):
-                if common_term in common_tally:
-                    common_tally[common_term] = common_tally[common_term] + 1
-                    #print("Old! {} now at {}".format(common_term, common_tally[common_term]))
-                else:
-                    common_tally[common_term] = 1
-                    #print("New! {} created".format(common_term))
+            if all(item in letters for item in common_letters): #if all the letters are found, then the common term is in this term, therefore add to tally
+            	if len(common_letters) != len(letters): #make sure cube free
+                	if common_term in common_tally:
+                		common_tally[common_term] = common_tally[common_term] + 1
+                		#print("Old! {} now at {}".format(common_term, common_tally[common_term]))
+                	else:
+                    		common_tally[common_term] = 1
+                    		#print("New! {} created".format(common_term)) 
+    solo = []
+    for entry in common_tally:
+    	if common_tally[entry] == 1:
+    		solo.append(entry)
+    for entry in solo:
+    	common_tally.pop(entry)
+    #print("Final version")
+    #print(common_tally)
     return common_tally
 
 #Takes an list of terms and common term, and factors it out and outputs it as a new string
@@ -317,6 +349,8 @@ def factor(terms, common):
 	new_terms_no_factor = []
 
 	chars_to_check = list(common)
+	#print("Chars to check:")
+	#print(chars_to_check)
 
 	#terms = inputs.split("+")
 	for term in terms:
@@ -337,10 +371,23 @@ def factor(terms, common):
 					new_term.append(term[i])
 		#add to list
 		new_terms.append(''.join(new_term))
+		#print("Before: {} and After: {}".format(term, new_term))
 	#craft string
+	new_terms = [char for char in new_terms if char] #remove emptys
+	#print("Leftovers from factoring: {}".format(str(new_terms)))
+	#print("Remainders from factoring: {}".format(str(new_terms_no_factor)))
+	#print("Crafting str")
 	working_str = '+'.join(new_terms)
+	#print(working_str)
 	working_str = common+"("+working_str+")"
+	#print("Crafting str")
+	#print(working_str)
+	if len(new_terms_no_factor) != 0:
+		working_str = working_str + "+"
+		#print(working_str)
 	working_str = working_str + "+".join(new_terms_no_factor)
+	#print("Crafting str")
+	#print(working_str)
 	return working_str
 
 #converts equations so that they can be split properly (a -> A')
@@ -371,3 +418,33 @@ def toFactorer(equations):
 		new_eqn=''.join(new_eqn)
 		new_equations.append(new_eqn)
 	return new_equations
+
+def get_most_useful(dictionary):
+	entries = list(dictionary.keys())
+	length_entry = []
+	for i in range(len(entries)):
+		length_entry.append(len(entries[i]))
+	values_of = list(dictionary.values())
+
+	print("In most useful: entries, lengths of such, values of, and values updated")
+	print(entries)
+	print(length_entry)
+	print(values_of)
+
+	#make it so that values is how many hits
+	if all(isinstance(item, int) for item in values_of): #check if it is of integers
+		pass #this is for the case where we are using common_per_eqn aka a dictionary with values of how common
+	else: #this is for when using mass terms, where values are a list
+		for i in range(len(values_of)):
+			values_of[i] = len(values_of[i])
+	print(values_of)
+
+	top_entry=""
+	top_value=0
+	for i in range(len(length_entry)):
+		if length_entry[i] >= len(top_entry):
+			if values_of[i] >= top_value:
+				top_entry = entries[i]
+				top_value = values_of[i]
+	print("Most common entry: {}, with {} hits".format(top_entry, top_value))
+	return top_entry
