@@ -4,6 +4,7 @@ This program takes an input of equations and maps it to a virtual FPGA.
 * Take an .eqns file for mapping equations to LUTS
 * Optimize equations with function minimzation, substituition, and multi-level factoring.
 * Save design as a bitstream file for later use.
+
 From a design, the user can see:
 * One or all LUT assignments
 * Connections between LUTS
