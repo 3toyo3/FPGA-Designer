@@ -1,6 +1,15 @@
 # FPGA-Designer
-This program takes an input of equations and maps it to a virtual FPGA. The program takes a .eqns file (please refer to demo eqns files within repo for syntax) and creates the FPGA based on user inputs for the number of LUTS, external connections, and internal connections. This program also allows for the design to be saved as a bitstream file.
-This allows for the program to recraft the design later. With the FPGA design, the user can then see where each function was mapped, the connections between each, the external assignments, the resource allocations, and a visual of the FPGA connections. This program also allows for optimizations such as function minimization, substituition, and multi-level factoring in order to reduce the number of gates. The user can choose what optimizations to implement when crafting the FPGA.
+This program takes an input of equations and maps it to a virtual FPGA.
+* Construct FPGA from user input on number of LUTS, external connections, and internal connections
+* Take an .eqns file for mapping equations to LUTS
+* Optimize equations with function minimzation, substituition, and multi-level factoring.
+* Save design as a bitstream file for later use.
+From a design, the user can see:
+* One or all LUT assignments
+* Connections between LUTS
+* External connections
+* Resource allocation
+* Graph representation of the FPGA
 
 ## Files
 * FPGAinitializer.py : This program interacts with the user to create the FPGA design.
