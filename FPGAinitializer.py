@@ -4,8 +4,8 @@ from os.path import exists
 from os.path import getsize
 from FPGAstructure import *
 from logic_synthesizer import *
-#import synthesis_engine as sy
-#import synthesis_engine6 as sy6
+import synthesis_engine as sy
+import synthesis_engine6 as sy6
 
 # This program sets up the FPGA based on user input
 
@@ -55,7 +55,7 @@ def get_connectivity():
 			print("Invalid input. Please pick option A or B")
 	return connect_type
 
-def specify_connectivity(connect_type): #TODO this function
+def specify_connections(connect_type): #TODO this function
 	if connect_type == 2:
 		connections = 1
 		#while True:
@@ -91,7 +91,7 @@ def get_equations():
 		print("Please input .eqns file for the logic expressions")
 		eqns_file_path=input()
 		if exists(eqns_file_path):
-			if eqns_file_path[-5:]==".eqns": #check file extension 
+			if eqns_file_path[-5:]==".eqns": #check file extension
 				with open(eqns_file_path, 'r') as file:
 					lines_list=file.readlines()
 				break
@@ -113,13 +113,15 @@ def get_equations():
 def basic_prompt(word):
 	while True:
 		print("Do you want the FPGA to be {}?".format(word))
-		user_input = input("A: Yes  B: No")
-		if user_input == 'A':
+		user_input = input("A: Yes  B: No\n")
+		if user_input.upper() == 'A':
 			user_input = True
-		elif user_input == 'B':
+			break
+		elif user_input.upper == 'B':
 			user_input = False
+			break
 		else:
-			print("Please pick option A or B.o")
+			print("Please pick option A or B.")
 	return user_input
 
 #integration
@@ -140,34 +142,37 @@ def craft_new_FPGA( LUTS_num, LUT_type, connect_type, connections, input_num, ou
 	equations=toSplitter(equations) #changes string format
 	if LUT_type == 4:
 		print("LUT4")
-		eqns = sy.assign_LUTS(eqns,LUTS_num)
+		LUTS = sy.assign_LUTs(equations,LUTS_num)
 	elif LUT_type == 6:
 		print("LUT6")
-		eqns = sy.assign_LUTS(eqns, LUTS_num)
+		LUTS = sy6.assign_LUTs(equations, LUTS_num)
 	#TODO partial equations here or below..
 
 	#At this point, you have the final equations for assignment
-	if LUTS_num < len(equations):
+	if LUTS_num < len(LUTS):
 		print("This FPGA doesn't have enough LUTS. Using minimized equations instead.")
 		equations = equations_backup
-		if LUTS_num < len(equations):
+		if LUT_type == 4:
+			LUTS = sy.assign_LUTs(equations, LUTS_num)
+		elif LUT_type == 6:
+			LUTS = sy6.assign_LUTs(equations, LUTS_num)
+		if LUTS_num < len(LUTS):
 			print("This FPGA still doesn't have enough LUTS.")
 			print("Ending program...")
 			sys.exit()
 
 	FPGA1 = FPGA()
-	FPGA1.initializeIO(input_num, output_num)
-	FPGA1.set_LUTS(equations)
-	if connect_type == 2: #partial
-		FPGA1.set_connections(connections) #TODO
+	FPGA1.set_LUTS(LUTS)
+	#if connect_type == 2: #partial
+	#	FPGA1.set_connections(connections) #TODO
 	FPGA1.updateOutputs()
 	FPGA1.updateInputs()
 	return FPGA1
 
-#TODO assuming bitstream parser returns a list of equations...
-def recraft_FPGA(equations):
+#TODO assuming bitstream parser returns a list of lut objects
+def recraft_FPGA(luts):
 	FPGA1 = FPGA()
-	FPGA1.set_LUTS(equations)
+	FPGA1.set_LUTS(luts)
 	FPGA1.updateOutputs()
 	FPGA1.updateInputs()
 	return FPGA1
@@ -214,28 +219,19 @@ def main():
 
 	#===============Recraft FPGA
 	if useBitstream:
-		with open(bitstream_file, 'r') as file:
-			rawbits = file.read()
-		rawbits = rawbits.strip('[]')
-		rawbits = rawbits.split(',')
-		if len(rawbits) == 10:
-			bits = rawbits
-			#TODO parse bitstream for equations
-			FPGA1 = recraft_FPGA(equations)
-		else:
-			print("This bitstream was improperly formatted. Closing program.")
-			sys.exit()
+		LUTS = build_from_bitstream(bitstream_file) #TODO make this GET
+		FPGA1 = recraft_FPGA(equations)
 
 	#================MAKE NEW FPGA via USER INPUT
 	else:
 		LUTS_num = get_LUTS_num()
 		LUT_type = get_LUT_type()
 		connect_type = get_connectivity()
-		connections = specify_connections()
-		input_num, output_num = getIO()
+		connections = specify_connections(connect_type)
+		input_num, output_num = get_IO()
 		equations = get_equations()
 
-		FPGA1 = create_new_FPGA(LUTS_num, LUT_type, connect_type, connections, input_num, output_num, equations)
+		FPGA1 = craft_new_FPGA(LUTS_num, LUT_type, connect_type, connections, input_num, output_num, equations)
 
 	#================User output
 	key = 'i'
@@ -267,8 +263,7 @@ def main():
 		elif key == '6': # Craft bitstream
 			bitstream_file = input("Please put a name for the bitstream file.")
 			bitstream_file = bitstream_file + ".bits"
-			with open(filename, 'w') as file:
-				file.write(str(bits)) #TODO craft bitstream
+			sy.write_bitstream(bitstream_file)
 			print("Saved as {}".format(bitstream_file))
 		elif key == '7': # Show resource allocation
 			used_LUTS = fpgaDesign.get_num_luts() #TODO get total number of luts
@@ -277,7 +272,7 @@ def main():
 			if 'total_LUTS' in locals():
 				print("% of LUT: {}".format((used_LUTS/total_LUTS) * 100)) #luts / connections of nodes
 			else:
-				print("% of LUT: {} used".format(used_LUTS))
+				print("% of LUT: {} used".format((used_LUTS/26) * 100))
 			print("% of connections: {}".format((used_connections/total_connection) * 100)) #number of connections
 			bitstream_exists=check_file(bitstream_file)
 			if bitstream_exists:
