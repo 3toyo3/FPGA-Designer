@@ -6,10 +6,10 @@ def textToArray(equations):
 	names = {}
 
 	for eqn in equations:
-		print(eqn)
+		#print(eqn)
 		seperate_formula=eqn.split("=")
 		eqn_terms=seperate_formula[1]
-		print(seperate_formula)
+		#print(seperate_formula)
 		output=seperate_formula[0]
 
 		#store variables in unique string
@@ -32,12 +32,12 @@ def textToArray(equations):
 		for term in terms:
 			#print(true_indices)
 			truth_value = []
-			print(term)
+			#print(term)
 			for i in range(len(inputs)):
 				truth_value.append('*') #initialize array with *
 			for i in range(len(term)): #Find if ' or normal
 				char = term[i]
-				print(char)
+				#print(char)
 				if char == "'":
 					char = term[i-1]
 					place = inputs.index(char)
@@ -50,9 +50,9 @@ def textToArray(equations):
 			if len(truth_value) != len(inputs):
 				print("Not matching in truth table generation")
 			if '*' in truth_value:
-				print("Dont care")
+				#print("Dont care")
 				new_indices = dont_cares(truth_value)
-				print(new_indices)
+				#print(new_indices)
 				for item in new_indices:
 					#print("Item")
 					#print(item)
@@ -63,7 +63,7 @@ def textToArray(equations):
 		for indice in np.ndindex(truthtable.shape):
 			if indice in true_indices:
 				truthtable[indice] = 1
-				print("Term marked as true found for {}".format(equation_ID))
+				#print("Term marked as true found for {}".format(equation_ID))
 		names[equation_ID]=truthtable
 	return names
 
@@ -71,12 +71,12 @@ def textToArray(equations):
 def minimize_equations(names):
 	equations=[]
 	for entry in names:
-		print(entry)
+		#print(entry)
 		truthtable=names[entry]
 		new_string=minimized_sop(truthtable)
-		print(new_string)
+		#print(new_string)
 		#TODO Forcefully recreate equation 
-		equations.append(new_string)
+		equations.append(entry[0] +"=" +new_string)
 	return equations
 
 #Takes a list of characters, and if any char represents a dont care, expands the list
@@ -103,8 +103,6 @@ def dont_cares(true):
 def substituition(equations):   #Todo  hyphens 
 	eqns_list = []
 	eqns_dict = {}
-	#eqns_dict_new = {}
-	#hyphen = False
 	#mutable
 	for eqn in equations: #puts every equation in dictionary
 		seperate_eqn = eqn.split("=")
@@ -123,37 +121,12 @@ def substituition(equations):   #Todo  hyphens
 	# Entry 1 is what is going to be put it. IE: F = c+d
 	# Entry 2 must have entry 1 within it G = ab+c+d
 	for entry1 in eqns_dict:
-		#if "(" in entry1:
-		#	hyphen = True
-		#	beginning = entry1.find("(")
-		#	end = entry1.find(")")
-		#	factored_term = 
-		#TODO pull of ()
-		#substitute_terms=eqns_dict[entry1].split("+") #All these terms must exist in.... 
-		### TODO take out factor parts
-		#print("Substitute")
-		#print(substitute_terms)
 		for entry2 in eqns_dict:
 			if entry1 == entry2:
 				pass
 			else:
 				equation_new = find_if_same(eqns_dict[entry1], eqns_dict[entry2], entry1)
 				eqns_dict[entry2] = equation_new
-				#substituted_terms=eqns_dict[entry2].split("+") #This equation
-				#print("Substituted")
-				#print(substituted_terms)
-				#common=[term in substituted_terms for term in substitute_terms ] #r and c
-				#print("Common")
-				#print(common)
-				#if all(common):
-				#	# print("All are true?")
-				#	for term in substitute_terms:
-				#		#print(term )
-				#		substituted_terms.remove(term)
-				#	substituted_terms.append(entry1)
-				#	#print(substituted_terms)
-				#	new_term='+'.join(substituted_terms)
-				#	eqns_dict_new[entry2]=new_term
 	#print(eqns_dict_new)
 	#print(eqns_dict)
 	#make a list of strings
@@ -212,7 +185,7 @@ def mutual_factor(equations):
 	for eqn in eqns_to_remove:
     		common_literals_per_eqn.pop(eqn)
 
-	print("Common literals in each eqn:")
+	#print("Common literals in each eqn:")
 	print(common_literals_per_eqn)
 
 	#Check if two equations have common literals
@@ -233,8 +206,8 @@ def mutual_factor(equations):
 	for term in mass_common_terms:
 		mass_common_terms[term] = set(mass_common_terms[term])
 
-	print("Shared common literals and their equations:")
-	print(mass_common_terms)
+	#print("Shared common literals and their equations:")
+	#print(mass_common_terms)
 
 	# Factor common equations
 	if len(mass_common_terms)>0:
@@ -245,7 +218,7 @@ def mutual_factor(equations):
 		#most_common_term = max(mass_common_terms, key=lambda x: len(mass_common_terms[x]))
 		most_common_term=get_most_useful(mass_common_terms)
 		common_equations = mass_common_terms.pop(most_common_term)
-		print("Most common term: {} and equations: {}".format(most_common_term, str(common_equations)))
+		#print("Most common term: {} and equations: {}".format(most_common_term, str(common_equations)))
 
 		#Check if the most_common_to_be_factor in other could-be-factors and removes
 		for entry in mass_common_terms: #TODO check this w single?
@@ -291,10 +264,10 @@ def mutual_factor(equations):
 			#print("Yer")
 			factorsExist = False
 
-	print("Equations after mass factoring:")
-	print(eqns_dict)
-	print("Equations left to factor:")
-	print(common_literals_per_eqn)
+	#print("Equations after mass factoring:")
+	#print(eqns_dict)
+	#print("Equations left to factor:")
+	#print(common_literals_per_eqn)
 	# Factor non common by what makes the most impact
 	for entry in common_literals_per_eqn:
 		#print(entry)
@@ -317,7 +290,7 @@ def mutual_factor(equations):
 		if type(new_terms) is list:
 			new_terms = "+".join(new_terms)
 		eqns_list.append(eqn+"="+new_terms)
-	print("Final equations:")
+	#print("Final equations:")
 	return eqns_list
 
 # From a list of terms, outputs the most common terms as a dictionary
@@ -449,17 +422,6 @@ def toFactorer(equations):
 		new_equations.append(new_eqn)
 	return new_equations
 
-#def get_terms_from_eqn(equation):
-#	substituted_terms = []
-#	factored = False
-#	if "(" in equation:
-#		beginning = equation.find("(")
-#		end = equation.find(")")
-#		factor_term = eqn[beginning+1:end]
-#		substituted_terms.append(factor_term)
-#		factored = True
-#	for i in 
-#	#TODO
 
 def distribute(equation):
 	split_equation = equation.split("=")
@@ -512,10 +474,10 @@ def get_most_useful(dictionary):
 		length_entry.append(len(entries[i]))
 	values_of = list(dictionary.values())
 
-	print("In most useful: entries, lengths of such, values of, and values updated")
-	print(entries)
-	print(length_entry)
-	print(values_of)
+#	print("In most useful: entries, lengths of such, values of, and values updated")
+#	print(entries)
+#	print(length_entry)
+#	print(values_of)
 
 	#make it so that values is how many hits
 	if all(isinstance(item, int) for item in values_of): #check if it is of integers
@@ -523,7 +485,7 @@ def get_most_useful(dictionary):
 	else: #this is for when using mass terms, where values are a list
 		for i in range(len(values_of)):
 			values_of[i] = len(values_of[i])
-	print(values_of)
+#	print(values_of)
 
 	top_entry=""
 	top_value=0
@@ -532,5 +494,6 @@ def get_most_useful(dictionary):
 			if values_of[i] >= top_value:
 				top_entry = entries[i]
 				top_value = values_of[i]
-	print("Most common entry: {}, with {} hits".format(top_entry, top_value))
+#	print("Most common entry: {}, with {} hits".format(top_entry, top_value))
 	return top_entry
+

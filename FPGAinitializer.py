@@ -9,8 +9,6 @@ from logic_synthesizer import *
 
 # This program sets up the FPGA based on user input
 
-#TODO partial connections, bitstream
-
 def check_file(filename):
 	file_exists = exists(filename)
 	return file_exists
@@ -49,7 +47,8 @@ def get_connectivity():
 			connect_type=9
 			break
 		elif connect_type.upper()=='B':
-			connect_type=2
+			#connect_type=2
+			connect_type=9
 			print("This program currently doesn't support partial connection between LUTS.") #TODO erase once done
 			break
 		else:
@@ -70,10 +69,8 @@ def specify_connectivity(connect_type): #TODO this function
 		#	else:
 		#		print("That file doesn't seem to exist.")
 	else:
-		print("Fully connected")
+		#print("Fully connected")
 		connections = 1
-		#TODO Fully connected
-		#Specify here
 	return connections
 
 def get_IO():
@@ -91,7 +88,7 @@ def get_IO():
 def get_equations():
 	equations = []
 	while True:
-		print("Please input eqns file for the logic expressions")
+		print("Please input .eqns file for the logic expressions")
 		eqns_file_path=input()
 		if exists(eqns_file_path):
 			if eqns_file_path[-5:]==".eqns": #check file extension 
