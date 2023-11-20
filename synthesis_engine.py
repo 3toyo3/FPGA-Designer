@@ -53,7 +53,7 @@ def print_LUT(index):
     print("External Output: "+LUTs[index].external_output)
 #*********************************************************************************************************************
 
-def get_LUT_global(lut_number):
+def get_LUT_global(lut_num):
 	global LUTs
 	return LUTs[lut_num]
 
