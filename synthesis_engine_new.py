@@ -57,10 +57,6 @@ def get_LUT_global(lut_num):
 	global LUTs
 	return LUTs[lut_num]
 
-def get_LUTS_global():
-	global LUTs
-	return LUTs
-
 #This function returns the number of distinct variables in a string
 #*********************************************************************************************************************
 def num_distinct_variables(function):
@@ -200,7 +196,7 @@ def split(function):
     global ext_out
     
 
-    print(function+" "+str(depth))
+   
     
     
     if function[1]=="=":
@@ -219,13 +215,13 @@ def split(function):
     #Base case: function contains 4 inputs, can now implement on LUT
     #elif num_distinct_variables(function)[0]==4 or (num_distinct_variables(function)[0]<4 and depth==1):
     elif num_distinct_variables(function)[0]<=4:
-        print('reached')
+        
         #Build the LUT
         LUTs[first_unused_lut].name=function
         LUTs[first_unused_lut].inputs= num_distinct_variables(function)[1]
         LUTs[first_unused_lut].output=str(first_unused_lut)
         if depth==1:
-            print("1")
+            
             LUTs[first_unused_lut].external_output=ext_out
 
         #Now move to the next LUT
@@ -363,7 +359,7 @@ def split(function):
         LUTs[first_unused_lut].inputs= num_distinct_variables(function)[1]
         LUTs[first_unused_lut].output=str(first_unused_lut)
         if depth==1:
-            print("2")
+            
             LUTs[first_unused_lut].external_output=ext_out
 
         #Now move to the next LUT
@@ -469,7 +465,7 @@ def split(function):
                 LUTs[first_unused_lut].inputs= num_distinct_variables(split_function[i])[1]
                 LUTs[first_unused_lut].output=str(first_unused_lut)
                 if depth==1:
-                    print("3")
+                    
                     LUTs[first_unused_lut].external_output=ext_out
 
                 #Now move to the next LUT
@@ -499,7 +495,7 @@ def split(function):
         LUTs[first_unused_lut].inputs= num_distinct_variables(function)[1]
         LUTs[first_unused_lut].output=str(first_unused_lut)
         if depth==1:
-            print("4")
+            
             LUTs[first_unused_lut].external_output=ext_out
 
         #Now move to the next LUT
@@ -943,7 +939,7 @@ def assign_LUTs(functions,num_luts):
 #Testing
 
 #test=["F=AB+CD","G=AB'C+A'BD","H=A+B+C+D","J=A'BC'D+AB'CD'","K=A'B'C+ABC'+A'BCD","L=AB'C'D+A'BC+B'CD","M=AB'C+A'BC'D","N=A'BC+AC'D+B'CD'","O=ABD+A'B'CD'","P=A'BC'+AB'CD'"]
-test=["G=AB'+A'CD'E+FK(G+H+I)"]
+test=["G=AB'+A'CD'E+FK(G+H+I')+I"]
 assign_LUTs(test,30)
 filename='bitstream.txt'
 write_bitstream(filename)
