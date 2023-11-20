@@ -203,7 +203,8 @@ def split(function):
         return ""
     
     #Base case: function contains 4 inputs, can now implement on LUT
-    elif num_distinct_variables(function)[0]==4 or (num_distinct_variables(function)[0]<4 and depth==1):
+    #elif num_distinct_variables(function)[0]==4 or (num_distinct_variables(function)[0]<4 and depth==1):
+    elif num_distinct_variables(function)[0]<=4:
         
         #Build the LUT
         LUTs[first_unused_lut].name=function
@@ -552,6 +553,7 @@ def write_bitstream():
 
         #Translate to a format that Ysatis' function accepts
         function=translate(LUTs[i].inputs,LUTs[i].name)
+        print(function)
 
         #Build the truth table
         array=eqnToArray(lut_symbols[i]+"="+function)
@@ -561,6 +563,14 @@ def write_bitstream():
         repeat=16/len(array)
         for i in range(int(repeat)):
             bitstream+=to_string(array)
+
+    #Take care of output connections
+    for i in range(first_unused_lut):
+        code=np.zeros(26,np.int8)
+        if not(LUTs[i].external_output==''):
+            index=letters.index(LUTs[i].external_output)
+            code[index]=1
+        bitstream+=to_string(code)
         
     #Finally, write the bitstream
     f = open("bitstream.txt", "w")
@@ -583,7 +593,7 @@ def build_from_bitstream():
     f.close()
     
     #Make the LUTs
-    num_luts= int(len(bitstream)/78)
+    num_luts= int(len(bitstream)/120)
     
     create_LUTs(num_luts)
 
@@ -624,6 +634,7 @@ def build_from_bitstream():
         #Get the working bitstream
         working_bitstream=bitstream[94*i+78:94*i+78+16]
         
+        
         #Truth table that will be passed to minimized_SOP
         truthtable = np.zeros((2,2,2,2))
         for j in range(16):
@@ -632,6 +643,15 @@ def build_from_bitstream():
         
         #Assign the function to the LUT
         LUTs[i].name=translate_reverse(LUTs[i].inputs,function)
+
+
+        #Finally rebuild the output connections
+        working_bitstream=bitstream[94*num_luts+i*26:94*num_luts+i*26+26]
+        for j in range(len(working_bitstream)):
+            if working_bitstream[j] =="1":
+                LUTs[i].external_output=letters[j]
+
+
 #*********************************************************************************************************************        
         
         
@@ -640,7 +660,9 @@ def build_from_bitstream():
 def translate(inputs,function):
     
     for i in range(len(inputs)):
-        function=function.replace(inputs[i],letters[i+4-len(inputs)])
+        function=function.replace(inputs[i],lut_symbols[i+4-len(inputs)])
+    for i in range(len(inputs)):
+        function=function.replace(lut_symbols[i+4-len(inputs)],letters[i+4-len(inputs)])
         
     return function
 #*********************************************************************************************************************
@@ -650,7 +672,9 @@ def translate(inputs,function):
 def translate_reverse(inputs,function):
     
     for i in range(len(inputs)-1,-1,-1):
-        function=function.replace(letters[i+4-len(inputs)],inputs[i])
+        function=function.replace(letters[i+4-len(inputs)],lut_symbols[i+4-len(inputs)])
+    for i in range(len(inputs)-1,-1,-1):
+        function=function.replace(lut_symbols[i+4-len(inputs)],inputs[i])
         
     return function
 #*********************************************************************************************************************         
@@ -778,12 +802,13 @@ def assign_LUTs(functions,num_luts):
 
 #Testing
 
-test=["F= AB+ABC+C","G= AB+C","H= A'C'+CD(B+D+E)","K= AB+C+CD","J= ABC+ABD","P= A'B'C'+D"]
+#test=["F= AB+ABC+CI(D'E+F)+G+H'","G= AB+C","H= A'C'+CD(B+D+E)","K= AB+C+CD","J= ABC+ABD","P= A'B'C'+D"]
+test=["F= A+B+C(D'+E+F+G)","G= A'B+C(D+EF+G)"]
 assign_LUTs(test,15)
-#write_bitstream()
-#build_from_bitstream()
-#print('**********************************************************************************************')
-#print_LUTs()
+write_bitstream()
+build_from_bitstream()
+print('**********************************************************************************************')
+print_LUTs()
 
 
 
