@@ -190,13 +190,15 @@ def split(function):
 
     
     if function[1]=="=":
-        function=function[3:]
+        depth=1
         ext_out=function[0]
-        print(ext_out)
+        function=function[3:]
+        
+        
     
 
     
-    #Base case: The function only conists of one input
+    #Base case: The function only consists of one input
     if num_distinct_variables(function)[0]==1:
         return ""
     
@@ -776,7 +778,7 @@ def assign_LUTs(functions,num_luts):
 
 #Testing
 
-test=["F= AB+ABC+C","G= AB+C","H= A'C'+CD","K= AB+C+CD","J= ABC+ABD","P= A'B'C'+D"]
+test=["F= AB+ABC+C","G= AB+C","H= A'C'+CD(B+D+E)","K= AB+C+CD","J= ABC+ABD","P= A'B'C'+D"]
 assign_LUTs(test,15)
 #write_bitstream()
 #build_from_bitstream()
