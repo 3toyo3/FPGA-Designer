@@ -100,10 +100,11 @@ def dont_cares(true):
 	return clean_holder
 
 # From a list of equations, checks if they are factorable and outputs a list of factored equations.
-def substituition(equations):
+def substituition(equations):   #Todo  hyphens 
 	eqns_list = []
 	eqns_dict = {}
 	eqns_dict_new = {}
+	#hyphen = False
 	#mutable
 	for eqn in equations: #puts every equation in dictionary
 		seperate_eqn = eqn.split("=")
@@ -120,6 +121,12 @@ def substituition(equations):
 					print("Cool") #idk not necessarily anything currently
 	#can I completely substitute an equation?
 	for entry1 in eqns_dict:
+		if "(" in entry1:
+			hyphen = True
+			beginning = entry1.find("(")
+			end = entry1.find(")")
+			factored_term = 
+		#TODO pull of ()
 		substitute_terms=eqns_dict[entry1].split("+") #All these terms must exist in.... 
 		### TODO take out factor parts
 		#print("Substitute")
@@ -151,7 +158,7 @@ def substituition(equations):
 	return eqns_list 
 
 #From a list of equations, outputs a list of equations factored based on eachother
-def mutual_factor(equations): #TODO make sure works w multiple '
+def mutual_factor(equations):
 	eqns_dict = {}
 	common_literals_per_eqn = {}
 	mass_common_terms = {}
@@ -213,8 +220,7 @@ def mutual_factor(equations): #TODO make sure works w multiple '
 		most_common_term=get_most_useful(mass_common_terms)
 		common_equations = mass_common_terms.pop(most_common_term)
 		print("Most common term: {} and equations: {}".format(most_common_term, str(common_equations)))
-		
-		#TODO make this work for cube-free
+
 		#Check if the most_common_to_be_factor in other could-be-factors and removes
 		for entry in mass_common_terms: #TODO check this w single?
 			#print("Entry")
@@ -289,8 +295,6 @@ def mutual_factor(equations): #TODO make sure works w multiple '
 	return eqns_list
 
 # From a list of terms, outputs the most common terms as a dictionary
-
-#TODO make it do that it cube free IE dont add in solos
 def find_common_literals(words):
     common_letters = []
     common_series = []
@@ -418,6 +422,53 @@ def toFactorer(equations):
 		new_eqn=''.join(new_eqn)
 		new_equations.append(new_eqn)
 	return new_equations
+
+def get_terms_from_eqn(equation):
+	substituted_terms = []
+	factored = False
+	if "(" in equation:
+		beginning = equation.find("(")
+		end = equation.find(")")
+		factor_term = eqn[beginning+1:end]
+		substituted_terms.append(factor_term)
+		factored = True
+	for i in 
+	#TODO
+
+def distribute(equation):
+	split_equation = equation.split("=")
+	output = split_equation[0]
+	inputs = split_equation[1]
+
+	factor_multipliers = []
+	factor_inners = []
+	new_terms = []
+
+	new_eqn = inputs
+	#find parenthesis
+	if "(" and ")" in inputs:
+		beginning = eqn.find("(")
+		end = eqn.find(")")
+		factor_inners.append(eqn[beginning+1:end])
+		new_eqn = eqn[:beginning]+"$"+eqn[end+1:]
+
+	new_eqn=new_eqn.split("+")
+	#find multipliers
+	for term in new_eqn:
+		if "$" in term:
+			place=term.find("$")
+			factor_multipliers.append(term[:place]+term[place+1:])
+		else:
+			new_terms.append(term)
+	#expand
+	for i in range(len(factor_inners)):
+		terms = factor_inners[i]
+		terms.split("+")
+		for term in terms:
+			new_terms.append(term+factor_multipliers[i])
+
+	new_equation = output + "+".join(new_terms)
+	return new_equation
 
 def get_most_useful(dictionary):
 	entries = list(dictionary.keys())
