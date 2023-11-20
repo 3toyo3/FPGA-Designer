@@ -103,31 +103,33 @@ def dont_cares(true):
 def substituition(equations):   #Todo  hyphens 
 	eqns_list = []
 	eqns_dict = {}
-	eqns_dict_new = {}
+	#eqns_dict_new = {}
 	#hyphen = False
 	#mutable
 	for eqn in equations: #puts every equation in dictionary
 		seperate_eqn = eqn.split("=")
 		eqns_dict[seperate_eqn[0]]=seperate_eqn[1]
-	eqns_dict_new = eqns_dict.copy()
+	#eqns_dict_new = eqns_dict.copy()
 	#print(eqns_dict_new)
 	#is equation referenced?
-	for entry1 in eqns_dict:
-		for entry2 in eqns_dict:
-			if entry1 == entry2:
-				pass
-			else:
-				if entry1 in eqns_dict[entry2]:
-					print("Cool") #idk not necessarily anything currently
+	#for entry1 in eqns_dict:
+	#	for entry2 in eqns_dict:
+	#		if entry1 == entry2:
+	#			pass
+	#		else:
+	#			if entry1 in eqns_dict[entry2]:
+	#				print("Cool") #idk not necessarily anything currently
 	#can I completely substitute an equation?
+	# Entry 1 is what is going to be put it. IE: F = c+d
+	# Entry 2 must have entry 1 within it G = ab+c+d
 	for entry1 in eqns_dict:
-		if "(" in entry1:
-			hyphen = True
-			beginning = entry1.find("(")
-			end = entry1.find(")")
-			factored_term = 
+		#if "(" in entry1:
+		#	hyphen = True
+		#	beginning = entry1.find("(")
+		#	end = entry1.find(")")
+		#	factored_term = 
 		#TODO pull of ()
-		substitute_terms=eqns_dict[entry1].split("+") #All these terms must exist in.... 
+		#substitute_terms=eqns_dict[entry1].split("+") #All these terms must exist in.... 
 		### TODO take out factor parts
 		#print("Substitute")
 		#print(substitute_terms)
@@ -135,27 +137,51 @@ def substituition(equations):   #Todo  hyphens
 			if entry1 == entry2:
 				pass
 			else:
-				substituted_terms=eqns_dict[entry2].split("+") #This equation
+				equation_new = find_if_same(eqns_dict[entry1], eqns_dict[entry2], entry1)
+				eqns_dict[entry2] = equation_new
+				#substituted_terms=eqns_dict[entry2].split("+") #This equation
 				#print("Substituted")
 				#print(substituted_terms)
-				common=[term in substituted_terms for term in substitute_terms ] #r and c
+				#common=[term in substituted_terms for term in substitute_terms ] #r and c
 				#print("Common")
 				#print(common)
-				if all(common):
-					# print("All are true?")
-					for term in substitute_terms:
-						#print(term )
-						substituted_terms.remove(term)
-					substituted_terms.append(entry1)
-					#print(substituted_terms)
-					new_term='+'.join(substituted_terms)
-					eqns_dict_new[entry2]=new_term
+				#if all(common):
+				#	# print("All are true?")
+				#	for term in substitute_terms:
+				#		#print(term )
+				#		substituted_terms.remove(term)
+				#	substituted_terms.append(entry1)
+				#	#print(substituted_terms)
+				#	new_term='+'.join(substituted_terms)
+				#	eqns_dict_new[entry2]=new_term
 	#print(eqns_dict_new)
 	#print(eqns_dict)
 	#make a list of strings
-	for entry in eqns_dict_new:
-		eqns_list.append(entry+"="+eqns_dict_new[entry])
-	return eqns_list 
+	for entry in eqns_dict:
+		eqns_list.append(entry+"="+eqns_dict[entry])
+	return eqns_list
+
+def find_if_same(eqn1, eqn2, eq1_out):
+	if "(" in eqn2 and ")" in eqn2:
+		beginning = eqn2.find("(")
+		end = eqn2.find(")")
+		par_eqn = eqn2[beginning+1:end]
+		par_eqn = find_if_same(eqn1, par_eqn, eq1_out)
+		eqn_new = eqn2[:beginning] + par_eqn + eqn2[end+1:]
+		#print(eqn_new)
+	else:
+		#print("Boo!")
+		eqn1 = eqn1.split("+")
+		eqn2 = eqn2.split("+")
+		#print("Split {} {}".format(str(eqn1), str(eqn2)))
+		common=[term in eqn2 for term in eqn1]
+		if all(common):
+			for term in eqn1:
+				eqn2.remove(term)
+			eqn2.append(eq1_out) #equation1 output
+		eqn_new = '+'.join(eqn2)
+        	#print(eqn_new)
+	return eqn_new
 
 #From a list of equations, outputs a list of equations factored based on eachother
 def mutual_factor(equations):
@@ -423,17 +449,17 @@ def toFactorer(equations):
 		new_equations.append(new_eqn)
 	return new_equations
 
-def get_terms_from_eqn(equation):
-	substituted_terms = []
-	factored = False
-	if "(" in equation:
-		beginning = equation.find("(")
-		end = equation.find(")")
-		factor_term = eqn[beginning+1:end]
-		substituted_terms.append(factor_term)
-		factored = True
-	for i in 
-	#TODO
+#def get_terms_from_eqn(equation):
+#	substituted_terms = []
+#	factored = False
+#	if "(" in equation:
+#		beginning = equation.find("(")
+#		end = equation.find(")")
+#		factor_term = eqn[beginning+1:end]
+#		substituted_terms.append(factor_term)
+#		factored = True
+#	for i in 
+#	#TODO
 
 def distribute(equation):
 	split_equation = equation.split("=")
@@ -447,11 +473,13 @@ def distribute(equation):
 	new_eqn = inputs
 	#find parenthesis
 	if "(" and ")" in inputs:
-		beginning = eqn.find("(")
-		end = eqn.find(")")
-		factor_inners.append(eqn[beginning+1:end])
-		new_eqn = eqn[:beginning]+"$"+eqn[end+1:]
-
+		#print("Found")
+		beginning = new_eqn.find("(")
+		end = new_eqn.find(")")
+		factor_inners.append(new_eqn[beginning+1:end])
+		new_eqn = new_eqn[:beginning]+"$"+new_eqn[end+1:]
+		#print("After substituition of $")
+		#print(new_eqn)
 	new_eqn=new_eqn.split("+")
 	#find multipliers
 	for term in new_eqn:
@@ -460,14 +488,21 @@ def distribute(equation):
 			factor_multipliers.append(term[:place]+term[place+1:])
 		else:
 			new_terms.append(term)
+	#print("After finding multipliers")
+	#print(factor_multipliers)
+	#print(new_terms)
 	#expand
 	for i in range(len(factor_inners)):
 		terms = factor_inners[i]
-		terms.split("+")
+		#print("before for loop")
+		#print(terms)
+		terms = terms.split("+")
+		#print(terms)
 		for term in terms:
+			#print("Term {}".format(term))
 			new_terms.append(term+factor_multipliers[i])
-
-	new_equation = output + "+".join(new_terms)
+			#print(new_terms)
+	new_equation = output +"="+ "+".join(new_terms)
 	return new_equation
 
 def get_most_useful(dictionary):
