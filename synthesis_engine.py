@@ -53,6 +53,9 @@ def print_LUT(index):
     print("External Output: "+LUTs[index].external_output)
 #*********************************************************************************************************************
 
+def get_LUT_global(lut_number):
+	global LUTs
+	return LUTs[lut_num]
 
 #This function returns the number of distinct variables in a string
 #*********************************************************************************************************************
