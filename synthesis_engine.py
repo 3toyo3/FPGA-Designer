@@ -50,6 +50,7 @@ def print_LUT(index):
     print("FUNCTION IMPLEMENTED: "+LUTs[index].name)
     print("INPUTS: "+LUTs[index].inputs)
     print("OUTPUT: "+LUTs[index].output)
+    print("External Output: "+LUTs[index].external_output)
 #*********************************************************************************************************************
 
 
@@ -513,7 +514,7 @@ def to_string(array):
 
 #This function creates the bitstream for the virtual FPGA
 #*********************************************************************************************************************
-def write_bitstream():
+def write_bitstream(filename):
     global LUTs
     global first_unused_lut
 
@@ -593,7 +594,7 @@ def write_bitstream():
     
         
     #Finally, write the bitstream
-    f = open("bitstream.txt", "w")
+    f = open(filename, "w")
     f.write(bitstream)
     f.close()
 #*********************************************************************************************************************
@@ -602,13 +603,13 @@ def write_bitstream():
 
 #This function build the LUTs from the bitstream
 #*********************************************************************************************************************
-def build_from_bitstream():
+def build_from_bitstream(filename):
 
     global LUTs
     global first_unused_lut
 
     #Read the bitstream
-    f = open("bitstream.txt", "r")
+    f = open(filename, "r")
     bitstream= f.read()
     f.close()
     
@@ -860,10 +861,11 @@ def assign_LUTs(functions,num_luts):
 #Testing
 
 #test=["F= AB+ABC+CI(D'E+F)+G+H'","G= AB+C","H= A'C'+CD(B+D+E)","K= AB+C+CD","J= ABC+ABD","P= A'B'C'+D"]
-test=["F= A'BC+A'BD+CDE+F'GH+ABDE+B'C'D'"]
+test=["F= A+B+CD'+E+F"]
 assign_LUTs(test,15)
-write_bitstream()
-build_from_bitstream()
+filename='bitstream.txt'
+write_bitstream(filename)
+build_from_bitstream(filename)
 print('**********************************************************************************************')
 print_LUTs()
 
