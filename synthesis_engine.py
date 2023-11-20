@@ -75,6 +75,7 @@ def num_distinct_variables(function):
                 conditional_prime="'"
             if not(variables_used.count(function[i]+conditional_prime)):
                 count_variables+=1
+                print(function[i]+conditional_prime)
                 variables_used.append(function[i]+conditional_prime)
 
     
@@ -197,11 +198,11 @@ def split(function):
     if function[1]=="=":
         depth=1
         ext_out=function[0]
-        function=function[3:]
+        function=function[2:]
         
         
     
-
+    print(num_distinct_variables(function)[0])
     
     #Base case: The function only consists of one input
     if num_distinct_variables(function)[0]==1:
@@ -571,7 +572,20 @@ def write_bitstream(filename):
         
 
         #Build the truth table
-        array=eqnToArray(lut_symbols[i]+"="+function)
+        function_temp=lut_symbols[i]+"="+function
+        while(1):
+            
+            try:
+                index=function_temp.index("(")
+            except ValueError:
+                index=-1
+            if(index==-1):
+                 break
+            function_temp=distribute(function_temp)
+        
+        
+        array=eqnToArray(function_temp)
+        
 
         #Add to the bitstream
         array=array.flatten()
@@ -842,6 +856,51 @@ def dont_cares(true):
 			clean_holder.append(working)
 	return clean_holder
 
+def distribute(equation):
+	split_equation = equation.split("=")
+	output = split_equation[0]
+	inputs = split_equation[1]
+
+	factor_multipliers = []
+	factor_inners = []
+	new_terms = []
+
+	new_eqn = inputs
+	#find parenthesis
+	if "(" and ")" in inputs:
+		#print("Found")
+		beginning = new_eqn.find("(")
+		end = new_eqn.find(")")
+		factor_inners.append(new_eqn[beginning+1:end])
+		new_eqn = new_eqn[:beginning]+"$"+new_eqn[end+1:]
+		#print("After substituition of $")
+		#print(new_eqn)
+	new_eqn=new_eqn.split("+")
+	#find multipliers
+	for term in new_eqn:
+		if "$" in term:
+			place=term.find("$")
+			factor_multipliers.append(term[:place]+term[place+1:])
+		else:
+			new_terms.append(term)
+	#print("After finding multipliers")
+	#print(factor_multipliers)
+	#print(new_terms)
+	#expand
+	for i in range(len(factor_inners)):
+		terms = factor_inners[i]
+		#print("before for loop")
+		#print(terms)
+		terms = terms.split("+")
+		#print(terms)
+		for term in terms:
+			#print("Term {}".format(term))
+			new_terms.append(term+factor_multipliers[i])
+			#print(new_terms)
+	new_equation = output +"="+ "+".join(new_terms)
+	return new_equation
+
+
  
 #Main Function
 #*********************************************************************************************************************
@@ -860,9 +919,9 @@ def assign_LUTs(functions,num_luts):
 
 #Testing
 
-#test=["F= AB+ABC+CI(D'E+F)+G+H'","G= AB+C","H= A'C'+CD(B+D+E)","K= AB+C+CD","J= ABC+ABD","P= A'B'C'+D"]
-test=["F= A+B+CD'+E+F"]
-assign_LUTs(test,15)
+#test=["F=AB+CD","G=AB'C+A'BD","H=A+B+C+D","J=A'BC'D+AB'CD'","K=A'B'C+ABC'+A'BCD","L=AB'C'D+A'BC+B'CD","M=AB'C+A'BC'D","N=A'BC+AC'D+B'CD'","O=ABD+A'B'CD'","P=A'BC'+AB'CD'"]
+test=["O=ABD+A'B'CD"]
+assign_LUTs(test,30)
 filename='bitstream.txt'
 write_bitstream(filename)
 build_from_bitstream(filename)
