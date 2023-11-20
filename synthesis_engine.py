@@ -1,11 +1,13 @@
 from LUT import LUT
 import numpy as np
-import os
+from minimize import *
 
 LUTs=[]
 first_unused_lut=0
 letters = ["A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"]
 lut_symbols = ["a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z"]
+depth=0
+ext_out=''
 
 #This function initializes a desired number of LUTS
 #*********************************************************************************************************************
@@ -21,7 +23,7 @@ def create_LUTs(num_luts):
 
     #Create the LUTs
     for i in range(num_luts):
-        LUTs.append(LUT("",[],""))
+        LUTs.append(LUT("",[],"",""))
 #*********************************************************************************************************************
 
 
@@ -37,6 +39,7 @@ def print_LUTs():
         print()
         print("LUT"+str(i))
         print(lut_symbols[i]+" = "+LUTs[i].name)
+        print("External Output: "+LUTs[i].external_output)
         print()
 
 #*********************************************************************************************************************
@@ -181,20 +184,31 @@ def split_by_parenthesis(function):
 def split(function):
     global LUTs
     global first_unused_lut
+    global depth
+    global ext_out
+    depth+=1
 
+    
+    if function[1]=="=":
+        function=function[3:]
+        ext_out=function[0]
+        print(ext_out)
+    
 
-
+    
     #Base case: The function only conists of one input
     if num_distinct_variables(function)[0]==1:
         return ""
     
     #Base case: function contains 4 inputs, can now implement on LUT
-    elif num_distinct_variables(function)[0]==4:
+    elif num_distinct_variables(function)[0]==4 or (num_distinct_variables(function)[0]<4 and depth==1):
         
         #Build the LUT
         LUTs[first_unused_lut].name=function
         LUTs[first_unused_lut].inputs= num_distinct_variables(function)[1]
         LUTs[first_unused_lut].output=str(first_unused_lut)
+        if depth==1:
+            LUTs[first_unused_lut].external_output=ext_out
 
         #Now move to the next LUT
         first_unused_lut+=1
@@ -206,8 +220,10 @@ def split(function):
     #If the function has a plus sign outside all parenthesis
     elif plus_sign_outside(function):
         
+
         #Divide the function up by plus signs
         split_function=split_by_plus_sign(function)
+        
 
         
 
@@ -232,7 +248,8 @@ def split(function):
                     if j>i:
                         
                         next_function+="+"+split_function[j]
-
+                
+                depth=0
                 return split(next_function)
                 
         
@@ -259,7 +276,9 @@ def split(function):
             if sum==4:
                 
                 four_input_function=four_input_function[:len(four_input_function)-1]
-                return split(rest_of_function+split(four_input_function))
+                temp=split(four_input_function)
+                depth=0
+                return split(rest_of_function+temp)
                 
         
         #Third Condition: Are there any slices greater than 4 inputs that can be broken up?
@@ -278,7 +297,8 @@ def split(function):
                     if j>i:
                         
                         next_function+="+"+split_function[j]
-
+                depth=0
+                
                 return split(next_function)
             
         #Fourth Condition: one of the slices has 3 inputs
@@ -287,6 +307,8 @@ def split(function):
                 LUTs[first_unused_lut].name=split_function[i]
                 LUTs[first_unused_lut].inputs= num_distinct_variables(split_function[i])[1]
                 LUTs[first_unused_lut].output=str(first_unused_lut)
+                if depth==1:
+                    LUTs[first_unused_lut].external_output=ext_out
 
                 #Now move to the next LUT
                 first_unused_lut+=1
@@ -306,6 +328,7 @@ def split(function):
 
 
                 #Return the name of the LUT in place of the function it implemented
+                depth=0
                 return(split(next_function))
             
         
@@ -315,11 +338,14 @@ def split(function):
         LUTs[first_unused_lut].name=function
         LUTs[first_unused_lut].inputs= num_distinct_variables(function)[1]
         LUTs[first_unused_lut].output=str(first_unused_lut)
+        if depth==1:
+            LUTs[first_unused_lut].external_output=ext_out
 
         #Now move to the next LUT
         first_unused_lut+=1
 
         #Return the name of the LUT in place of the function it implemented
+        depth=0
         return(lut_symbols[first_unused_lut-1])
 
 
@@ -355,6 +381,7 @@ def split(function):
                         
                         next_function+="("+split_function[j]+")"
 
+                depth=0
                 return split(next_function)
                 
         
@@ -380,7 +407,9 @@ def split(function):
 
             if sum==4:
                 four_input_function=four_input_function[:len(four_input_function)]
-                return split(rest_of_function+"("+split(four_input_function)+")")
+                temp=split(four_input_function)
+                depth=0
+                return split(rest_of_function+"("+temp+")")
                 
         
         #Third Condition: Are there any slices greater than 4 inputs that can be broken up?
@@ -400,6 +429,7 @@ def split(function):
                         
                         next_function+="("+split_function[j]+")"
 
+                depth=0
                 return split(next_function)
             
         #Fourth Condition: one of the slices has 3 inputs
@@ -408,6 +438,8 @@ def split(function):
                 LUTs[first_unused_lut].name=split_function[i]
                 LUTs[first_unused_lut].inputs= num_distinct_variables(split_function[i])[1]
                 LUTs[first_unused_lut].output=str(first_unused_lut)
+                if depth==1:
+                    LUTs[first_unused_lut].external_output=ext_out
 
                 #Now move to the next LUT
                 first_unused_lut+=1
@@ -427,6 +459,7 @@ def split(function):
 
 
                 #Return the name of the LUT in place of the function it implemented
+                depth=0
                 return(split(next_function))
             
         #At this point, we should be able to just assign the whole thing to a LUT
@@ -434,6 +467,8 @@ def split(function):
         LUTs[first_unused_lut].name=function
         LUTs[first_unused_lut].inputs= num_distinct_variables(function)[1]
         LUTs[first_unused_lut].output=str(first_unused_lut)
+        if depth==1:
+            LUTs[first_unused_lut].external_output=ext_out
 
         #Now move to the next LUT
         first_unused_lut+=1
@@ -459,21 +494,23 @@ def split(function):
 #*********************************************************************************************************************
 
 
+#This function returns an array as a string
+#*********************************************************************************************************************
 def to_string(array):
     return_string=''
     for i in range(len(array)):
-        return_string+=str(array[i])
+        return_string+=str(int(array[i]))
     return return_string
+#*********************************************************************************************************************
 
-
+#This function creates the bitstream for the virtual FPGA
+#*********************************************************************************************************************
 def write_bitstream():
     global LUTs
     global first_unused_lut
 
     #Initialize the bitstream
     bitstream=''
-
-    
 
     #Walk through each LUT 
     for i in range(first_unused_lut):
@@ -486,16 +523,13 @@ def write_bitstream():
         inputcode=np.zeros(78,np.int8)
         
         
-        #Walk through each variable
+        #Walk through each variable and build the correct bitstream
         for j in range(len(variables)):
 
             try:
                 index=letters.index(variables[j][0])
             except ValueError:
                 index=-1
-            
-        
-
 
             if not(index == -1):
                 index*=2
@@ -507,28 +541,232 @@ def write_bitstream():
         
             inputcode[index]=1
 
+        #Add to the bitstream
         bitstream+=to_string(inputcode)
+        
+      
+        
+        #Now handle the output of the LUT
 
+        #Translate to a format that Ysatis' function accepts
+        function=translate(LUTs[i].inputs,LUTs[i].name)
+
+        #Build the truth table
+        array=eqnToArray(lut_symbols[i]+"="+function)
+
+        #Add to the bitstream
+        array=array.flatten()
+        repeat=16/len(array)
+        for i in range(int(repeat)):
+            bitstream+=to_string(array)
+        
+    #Finally, write the bitstream
     f = open("bitstream.txt", "w")
     f.write(bitstream)
     f.close()
+#*********************************************************************************************************************
     
+
+
+#This function build the LUTs from the bitstream
+#*********************************************************************************************************************
+def build_from_bitstream():
+
+    global LUTs
+    global first_unused_lut
+
+    #Read the bitstream
+    f = open("bitstream.txt", "r")
+    bitstream= f.read()
+    f.close()
+    
+    #Make the LUTs
+    num_luts= int(len(bitstream)/78)
+    
+    create_LUTs(num_luts)
+
+    first_unused_lut=num_luts
+   
+    #Walk through each LUT
+    for i in range(num_luts):
+        
+        #Get the working section of the bitstream
+        working_bitstream=bitstream[i*94:i*94+78]
+
+        for j in range(len(working_bitstream)):
+            if working_bitstream[j]=='1':
+            
+                
+                #If the input is one of the external inputs
+                if j<52:
+
+                    index=0
+                    conditional_prime=""
+                    if j % 2==0:
+                        index= j/2
+                    else:
+                        index=(j-1)/2
+                        conditional_prime="'"
+                    
+                    
+                    LUTs[i].inputs.append(letters[int(index)]+conditional_prime)
+                
+                #If the input comes from another LUT
+                else:
+                    index=j-52
+                    LUTs[i].inputs.append(lut_symbols[int(index)])
+
+
+        #Now rebuild the functions
+
+        #Get the working bitstream
+        working_bitstream=bitstream[94*i+78:94*i+78+16]
+        
+        #Truth table that will be passed to minimized_SOP
+        truthtable = np.zeros((2,2,2,2))
+        for j in range(16):
+            truthtable[dec_to_binary_4bit(j)[3]][dec_to_binary_4bit(j)[2]][dec_to_binary_4bit(j)[1]][dec_to_binary_4bit(j)[0]]=int(working_bitstream[j])
+        function=minimized_sop(truthtable)
+        
+        #Assign the function to the LUT
+        LUTs[i].name=translate_reverse(LUTs[i].inputs,function)
+#*********************************************************************************************************************        
+        
+        
+#This function will convert to functions to A,B,C,D for the purposes of truth table generation
+#*********************************************************************************************************************
+def translate(inputs,function):
+    
+    for i in range(len(inputs)):
+        function=function.replace(inputs[i],letters[i+4-len(inputs)])
+        
+    return function
+#*********************************************************************************************************************
+
+#This function is necessary for decoding LUT output from the bitstream
+#*********************************************************************************************************************
+def translate_reverse(inputs,function):
+    
+    for i in range(len(inputs)-1,-1,-1):
+        function=function.replace(letters[i+4-len(inputs)],inputs[i])
+        
+    return function
+#*********************************************************************************************************************         
+
+#Decimal to Binary
+#*********************************************************************************************************************
+def dec_to_binary_4bit(num):
+    code0=0
+    code1=0
+    code2=0
+    code3=0
+
+    if num%2==1:
+        code0=1
+        num -=1
+    num /=2
+    if num%2==1:
+        code1=1
+        num -=1
+    num /=2
+    if num%2==1:
+        code2=1
+        num -=1
+    num /=2
+    if num%2==1:
+        code3=1
+    
+    return code0,code1,code2,code3
+#*********************************************************************************************************************
         
 
+def eqnToArray(eqn):
+	#print(eqn)
+	seperate_formula=eqn.split("=")
+	eqn_terms=seperate_formula[1]
+	#print(seperate_formula)
+	output=seperate_formula[0]
 
-        #Next, handle the function implemented
+	unique_inputs=[]
+	for char in eqn:
+		if char not in unique_inputs and char.isalpha():
+			if char not in output:
+				unique_inputs.append(char)
+	inputs=tuple(unique_inputs)
 
+	#make truth table
+	size=len(inputs)
+	truthtable = np.zeros([2]*size) #make array based on num of inputs
+	terms = eqn_terms.split('+')
+	true_indices = []
+	for term in terms:
+		#print(true_indices)
+		truth_value = []
+		#print(term)
+		for i in range(len(inputs)):
+			truth_value.append('*') #initialize array with *
+		for i in range(len(term)): #Find if ' or normal
+			char = term[i]
+			#print(char)
+			if char == "'":
+				char = term[i-1]
+				place = inputs.index(char)
+				truth_value[place] = 0
+				#print("Zero")
+			else:
+				place = inputs.index(char)
+				truth_value[place] = 1
+				#print("One")
+		if len(truth_value) != len(inputs):
+			print("Not matching in truth table generation")
+		if '*' in truth_value:
+			#print("Dont care")
+			new_indices = dont_cares(truth_value)
+			#print(new_indices)
+			for item in new_indices:
+				#print("Item")
+				#print(item)
+				true_indices.append(tuple(item))
+		else:
+			#print(truth_value)
+			#print(item)
+			new_indices = truth_value
+			true_indices.append(tuple(new_indices))
+	for indice in np.ndindex(truthtable.shape):
+		if indice in true_indices:
+			truthtable[indice] = 1
+			#print("{} term marked as true".format(indice))
+	return truthtable
 
+#Takes a list of characters, and if any char represents a dont care, expands the list
+def dont_cares(true):
+	none_holder = []
+	none_holder.append(true)
+	clean_holder = []
+	while len(none_holder) > 0:
+		if '*' in none_holder[0]:
+			working = list(none_holder.pop(0))
+			none_place = working.index('*')
+			working[none_place] = 0
+			working_zero=tuple(working)
+			none_holder.append(working_zero)
+			working[none_place] = 1
+			working_one=tuple(working)
+			none_holder.append(working_one)
+		else:
+			working = none_holder.pop(0)
+			clean_holder.append(working)
+	return clean_holder
 
-
-
-
+ 
 #Main Function
 #*********************************************************************************************************************
 def assign_LUTs(functions,num_luts):
+    global depth
     create_LUTs(num_luts)
     for i in range(len(functions)):
-        split(functions[i][2:])
+        depth=0
+        split(functions[i])
     print_LUTs()
 #*********************************************************************************************************************    
         
@@ -537,9 +775,18 @@ def assign_LUTs(functions,num_luts):
 
 
 #Testing
-test=["X=A'+B+C+D+E","G=ABCD"]
-assign_LUTs(test,3)
-write_bitstream()
+
+test=["F= AB+ABC+C","G= AB+C","H= A'C'+CD","K= AB+C+CD","J= ABC+ABD","P= A'B'C'+D"]
+assign_LUTs(test,15)
+#write_bitstream()
+#build_from_bitstream()
+#print('**********************************************************************************************')
+#print_LUTs()
+
+
+
+
+
 
 
 
