@@ -944,10 +944,10 @@ def assign_LUTs(functions,num_luts):
 #Testing
 
 #test=["F=AB+CD","G=AB'C+A'BD","H=A+B+C+D","J=A'BC'D+AB'CD'","K=A'B'C+ABC'+A'BCD","L=AB'C'D+A'BC+B'CD","M=AB'C+A'BC'D","N=A'BC+AC'D+B'CD'","O=ABD+A'B'CD'","P=A'BC'+AB'CD'"]
-test=["G=AB'+A'CD'E+FK(G+H+I')+I"]
-assign_LUTs(test,30)
-filename='bitstream.txt'
-write_bitstream(filename)
-build_from_bitstream(filename)
-print('**********************************************************************************************')
-print_LUTs()
+#test=["G=AB'+A'CD'E+FK(G+H+I')+I"]
+#assign_LUTs(test,30)
+#filename='bitstream.txt'
+#write_bitstream(filename)
+#build_from_bitstream(filename)
+#print('**********************************************************************************************')
+#print_LUTs()

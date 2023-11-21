@@ -5,7 +5,7 @@ from os.path import getsize
 from FPGAstructure import *
 from logic_synthesizer import *
 import synthesis_engine_new as sy
-import synthesis_engine6 as sy6
+import synthesis_engine_new6 as sy6
 
 # This program sets up the FPGA based on user input
 
@@ -222,6 +222,13 @@ def main():
 	if useBitstream:
 		LUTS = sy.build_from_bitstream(bitstream_file) #only 4 input :(
 		LUTS = sy.get_LUTS_global()
+		print("LUTS")
+		print(LUTS)
+		sy.print_LUTs()
+		for i in range(len(LUTS)):
+			LUT = LUTS[i]
+			LUT.output = str(i)
+			#print(LUT.output)
 		FPGA1 = recraft_FPGA(LUTS)
 
 	#================MAKE NEW FPGA via USER INPUT
@@ -271,17 +278,18 @@ def main():
 		elif key == '7': # Show resource allocation
 			used_LUTS = FPGA1.get_num_luts() #TODO get total number of luts
 			used_connections = FPGA1.get_num_internal_connections()
-			total_connection = FPGA1.get_lut_size() * used_LUTS
+			#total_connection = FPGA1.get_lut_size() * used_LUTS
 			#print("{} {} {}".format(used_LUTS, used_connections, total_connection))
 			if 'LUTS_num' in locals():
 				print("% of LUT: {:.2f}".format((used_LUTS/LUTS_num) * 100)) #luts / connections of nodes
 				total_connection = LUT_type * LUTS_num
 			else:
 				print("% of LUT: {:.2f} used".format((used_LUTS/26) * 100))
+				total_connection = FPGA1.get_lut_size() * 26
 			print("% of connections: {:.2f}".format((used_connections/total_connection) * 100)) #number of connections
 			bitstream_exists=check_file(bitstream_file)
 			if bitstream_exists:
-				print("Total memory required: {}".format(getsize(filename))) #size of bitstream
+				print("Total memory required: {}".format(getsize(bitstream_file))) #size of bitstream
 			else:
 				print("-- Create bitstream to find total memory required --")
 		elif key == '8': # Show FPGA visually
