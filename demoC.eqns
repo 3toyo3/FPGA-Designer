@@ -1,3 +1,11 @@
 #10 independent SOP formula (not canonical) that are a function of 8 variables each 
-F= AB+ABC+C
-G= AB+C
+Q=ABGH+CDEF'G'
+R=AB'CG+A'BDH+E'F'
+S=AEG+BF+CFH+D'G'
+J=BDEGH+AB'CF
+K=A'B'CEFG+ABC'+A'BCDFG'H
+L=AB'C'DEFGH+A'BCEF+B'CDF'GH+G
+M=ACE'F'+BC'DG+H'
+N=EF'G+AC'DFG+B'CD'EFH'
+O=AF'G'H'+CD'GH+BE
+P=A'BC'F+AB'CD'E+G'H'
