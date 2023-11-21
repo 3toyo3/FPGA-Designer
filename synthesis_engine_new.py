@@ -62,6 +62,10 @@ def get_LUTS_global():
 	global first_unused_lut
 	return LUTs[:first_unused_lut]
 
+def get_LUT_global(lut_num):
+	global LUTs
+	return LUTs[lut_num]
+
 #This function returns the number of distinct variables in a string
 #*********************************************************************************************************************
 def num_distinct_variables(function):
@@ -200,7 +204,7 @@ def split(function):
     global depth
     global ext_out
     
-
+    var=function[1]
    
     
     
@@ -211,10 +215,14 @@ def split(function):
         
     
     
-    #print(num_distinct_variables(function)[0])
     
-    #Base case: The function only consists of one input
+    
+    #Base case: The function only consists of one input,solution to G=F
     if num_distinct_variables(function)[0]==1:
+        for i in range(first_unused_lut):
+            for j in range(len(LUTs[i].external_output)):
+                if LUTs[i].external_output[j]==num_distinct_variables(function)[1][0]:
+                    LUTs[i].external_output= LUTs[i].external_output+" "+var
         return ""
     
     #Base case: function contains 4 inputs, can now implement on LUT
@@ -934,7 +942,7 @@ def assign_LUTs(functions,num_luts):
     for i in range(len(functions)):
         depth=0
         split(functions[i])
-    #print_LUTs()
+    print_LUTs()
 #*********************************************************************************************************************    
         
 
@@ -944,10 +952,10 @@ def assign_LUTs(functions,num_luts):
 #Testing
 
 #test=["F=AB+CD","G=AB'C+A'BD","H=A+B+C+D","J=A'BC'D+AB'CD'","K=A'B'C+ABC'+A'BCD","L=AB'C'D+A'BC+B'CD","M=AB'C+A'BC'D","N=A'BC+AC'D+B'CD'","O=ABD+A'B'CD'","P=A'BC'+AB'CD'"]
-#test=["G=AB'+A'CD'E+FK(G+H+I')+I"]
-#assign_LUTs(test,30)
-#filename='bitstream.txt'
-#write_bitstream(filename)
-#build_from_bitstream(filename)
-#print('**********************************************************************************************')
-#print_LUTs()
+test=["Z=A'B'C'+D'E'F+G'H'I'J+K+LMNO'+PQR+S'TU+VWXY"]
+assign_LUTs(test,30)
+filename='bitstream.txt'
+write_bitstream(filename)
+build_from_bitstream(filename)
+print('**********************************************************************************************')
+print_LUTs()
