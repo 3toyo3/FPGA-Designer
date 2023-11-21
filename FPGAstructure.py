@@ -76,8 +76,11 @@ class FPGA:
 			if not node_outputs:
 				pass
 			else:
-				connection=[node_name,node_outputs]
-				connections.append(connection)
+				outs = node_outputs.split()
+				for out in outs:
+					#print(out)
+					connection=[node_name,out]
+					connections.append(connection)
 			self.FPGA_graph.add_edges_from(connections)
 			self.LUTS.append(node_name)
 

@@ -4,8 +4,8 @@ from os.path import exists
 from os.path import getsize
 from FPGAstructure import *
 from logic_synthesizer import *
-import synthesis_engine_new as sy
-import synthesis_engine_new6 as sy6
+import synthesis_engine as sy
+import synthesis_engine6 as sy6
 
 # This program sets up the FPGA based on user input
 

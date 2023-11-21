@@ -15,10 +15,13 @@ def eqnToArray(eqn):
 				unique_inputs.append(char)
 	inputs=tuple(unique_inputs)
 
+	#print("Found inputs")
 	#make truth table
 	size=len(inputs)
+	#print(size)
 	truthtable = np.zeros([2]*size) #make array based on num of inputs
 	terms = eqn_terms.split('+')
+	#print(terms)
 	true_indices = []
 	for term in terms:
 		#print(true_indices)

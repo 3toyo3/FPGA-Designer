@@ -22,6 +22,7 @@ def textToArray(equations):
 
 		truthtable = eqnToArray(eqn)
 		names[equation_ID]=truthtable
+		print("Finished {}".format(eqn))
 	return names
 
 #Takes a dictionary with equations' MD arrays, and outputs list of minimized equations, references miminize.py
