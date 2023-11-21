@@ -1,12 +1,12 @@
 #10 inter-dependent SOP formula (not canonical) that are a function of 4 variables each 
 F=AB+ABC+C+D'
-G=F+B'
-H=F+A
+G=F+B'+CD
+H=F+A+BC'D
 I=ABCD+B
-J=I+AB
-K=I+A'
+J=I+AB+C'
+K=I+A'+A'C'D'
 L=A'B'+C'D'
-M=L+H
-N=G+H+J
+M=L+H+CD'
+N=G+H+J+A'
 O=ABCD'+B'
-P=K+O
+P=K+O+AB
