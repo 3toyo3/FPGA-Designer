@@ -4,7 +4,7 @@ from os.path import exists
 from os.path import getsize
 from FPGAstructure import *
 from logic_synthesizer import *
-import synthesis_engine as sy
+import synthesis_engine_new as sy
 import synthesis_engine6 as sy6
 
 # This program sets up the FPGA based on user input
@@ -143,9 +143,11 @@ def craft_new_FPGA( LUTS_num, LUT_type, connect_type, connections, input_num, ou
 	if LUT_type == 4:
 		print("LUT4")
 		LUTS = sy.assign_LUTs(equations,LUTS_num)
+		LUTS = sy.get_LUTS_global()
 	elif LUT_type == 6:
 		print("LUT6")
 		LUTS = sy6.assign_LUTs(equations, LUTS_num)
+		LUTS = sy6.get_LUTS_global()
 	#TODO partial equations here or below..
 
 	#At this point, you have the final equations for assignment
@@ -154,8 +156,10 @@ def craft_new_FPGA( LUTS_num, LUT_type, connect_type, connections, input_num, ou
 		equations = equations_backup
 		if LUT_type == 4:
 			LUTS = sy.assign_LUTs(equations, LUTS_num)
+			LUTS = sy.get_LUTS_global()
 		elif LUT_type == 6:
 			LUTS = sy6.assign_LUTs(equations, LUTS_num)
+			LUTS = sy6.get_LUTS_global()
 		if LUTS_num < len(LUTS):
 			print("This FPGA still doesn't have enough LUTS.")
 			print("Ending program...")
@@ -239,25 +243,25 @@ def main():
 	while key != 'q':
 		key=input("What do you want to do?")
 		if key=='1':  # Show all LUT assignments
-			LUTS = fpgaDesign.get_LUTS()
+			LUTS = FPGA1.get_LUTS()
 			for i in range(len(LUTS)):
 				print("LUT{}: {}".format(i,LUTS[i]))
 		elif key == '2': # Show specific LUT assignment
 			num = input("Which LUT do you want to see? 1-{}".format(LUTs_num))
-			if num <= fpgaDesign.get_num_luts(): #makesure no index error
-				LUT = fpgaDesign.get_LUT(num)
+			if num <= FPGA1.get_num_luts(): #makesure no index error
+				LUT = FPGA1.get_LUT(num)
 				print(LUT)
 			else:
 				print("LUT{} doesn't exist".format(num))
 		elif key == '3': # Show internal connections
-			conn = fpgaDesign.get_connections()
+			conn = FPGA1.get_connections()
 			print(conn)
 		elif key == '4': # Show external inputs
-			ex_inputs = fpgaDesign.get_inputs()
+			ex_inputs = FPGA1.get_inputs()
 			for i in range(len(ex_inputs)):
 				print("I{}: {}".format(i, ex_inputs[i]))
 		elif key == '5': # Show external outputs
-			ex_outputs = fpgaDesign.get_outputs()
+			ex_outputs = FPGA1.get_outputs()
 			for i in range(len(ex_outputs)):
 				print("O{}: {}".format(i, ex_outputs[i]))
 		elif key == '6': # Craft bitstream
@@ -266,9 +270,9 @@ def main():
 			sy.write_bitstream(bitstream_file)
 			print("Saved as {}".format(bitstream_file))
 		elif key == '7': # Show resource allocation
-			used_LUTS = fpgaDesign.get_num_luts() #TODO get total number of luts
-			used_connections = fpgaDesign.get_num_connections()
-			total_connection = fpgaDesign.get_lut_size() * used_LUTS
+			used_LUTS = FPGA1.get_num_luts() #TODO get total number of luts
+			used_connections = FPGA1.get_num_connections()
+			total_connection = FPGA1.get_lut_size() * used_LUTS
 			if 'total_LUTS' in locals():
 				print("% of LUT: {}".format((used_LUTS/total_LUTS) * 100)) #luts / connections of nodes
 			else:
@@ -280,7 +284,7 @@ def main():
 			else:
 				print("-- Create bitstream to find total memory required --")
 		elif key == '8': # Show FPGA visually
-			fpgaDesign.show_FPGA()
+			FPGA1.show_FPGA()
 		elif key == 'h':
 			output_prompt()
 		elif key == 'q': #quit

@@ -1,7 +1,8 @@
 F= AB+ABC+C
+K= AB+C+CD
 G= AB+C
 H= A'C'+CD
-K= AB+C+CD
+#K= AB+C+CD
 J= ABC+ABD
 P= A'B'C'+D
-G= C+D
+V= C+D

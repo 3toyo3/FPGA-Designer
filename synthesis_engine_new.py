@@ -57,6 +57,11 @@ def get_LUT_global(lut_num):
 	global LUTs
 	return LUTs[lut_num]
 
+def get_LUTS_global():
+	global LUTs
+	global first_unused_lut
+	return LUTs[:first_unused_lut]
+
 #This function returns the number of distinct variables in a string
 #*********************************************************************************************************************
 def num_distinct_variables(function):

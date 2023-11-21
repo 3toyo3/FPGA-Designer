@@ -52,36 +52,37 @@ class FPGA:
 	#takes a list of lut objects
 	def set_LUTS(self, luts):
 		for lut in luts:
-			node_eqn = chr(int(lut.output)+97) #TODO fix
+			#print(lut.name)
+			node_name = chr(int(lut.output)+97) #TODO fix
 			node_data = lut.name
 			node_inputs = lut.inputs
 			node_outputs = lut.external_output
 
-			self.FPGA_graph.add(node_name, data=node_data)
+			self.FPGA_graph.add_node(node_name, data=node_data)
 			#make node connections
-			connections_inputs = []
+			connections = []
 			for inp in node_inputs:
-				connection=[node, node_name]
+				connection=[inp, node_name]
 				connections.append(connection)
 			if not node_outputs:
 				pass
 			else:
 				connection=[node_name,node_outputs]
 				connections.append(connection)
-			self.FPGA_graph.add_edges_from(connection_inputs)
+			self.FPGA_graph.add_edges_from(connections)
 			self.LUTS.append(node_name)
 
 	def get_LUTS(self): #returns lut nodes
 		eqns = []
 		for node in self.LUTS:
-			eqn=self.FPGA_graph.nodes[node]
+			eqn=self.FPGA_graph.nodes[node]['data']
 			eqns.append(node+"="+eqn)
 		return eqns
 
 	def get_LUT(self, LUTnum):
 		if LUTnum <= len(self.LUTS):
 			node = self.LUTS[LUTnum]
-			eqn = self.FPGA_graph.nodes[node]
+			eqn = self.FPGA_graph.nodes[node]['data']
 			return eqn
 		else:
 			return "LUT{} doesn't exist".format(LUTnum)
@@ -95,8 +96,10 @@ class FPGA:
 	def show_FPGA(self):
 		plot.figure(figsize=(8,6)) #optional
 		pos = nx.shell_layout(self.FPGA_graph)
-		node_labels = {node: self.FPGA_graph.nodes[node]['data'] for node in self.FPGA_graph.nodes()}
-		nx.draw(self.FPGA_graph, pos, with_labels=True, labels=node_labels, node_size=500, node_color="skyblue",font_weight="bold",arrows=False)
+		node_colors = ['red' if node in self.outputs else 'skyblue' for node in self.FPGA_graph.nodes()]
+		node_labels = {node: (str(self.FPGA_graph.nodes[node]['data']) if 'data' in self.FPGA_graph.nodes[node] else node) for node in self.FPGA_graph.nodes()}
+		#node_labels = {node: self.FPGA_graph.nodes[node]['data'] for node in self.FPGA_graph.nodes()}
+		nx.draw(self.FPGA_graph, pos, with_labels=True, labels=node_labels, node_size=500, node_color=node_colors,font_weight="bold",arrows=False)
 		plot.title("FPGA Design")
 		plot.show()
 
