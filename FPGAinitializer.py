@@ -113,11 +113,12 @@ def get_equations():
 def basic_prompt(word):
 	while True:
 		print("Do you want the FPGA to be {}?".format(word))
-		user_input = input("A: Yes  B: No\n")
+		print("A: Yes B: No")
+		user_input = input()
 		if user_input.upper() == 'A':
 			user_input = True
 			break
-		elif user_input.upper == 'B':
+		elif user_input.upper() == 'B':
 			user_input = False
 			break
 		else:
