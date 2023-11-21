@@ -219,7 +219,7 @@ def split(function):
     
     #Base case: The function only consists of one input,solution to G=F
     if num_distinct_variables(function)[0]==1:
-        print(var)
+        
         for i in range(first_unused_lut):
             for j in range(len(LUTs[i].external_output)):
                 if LUTs[i].external_output[j]==num_distinct_variables(function)[1][0]:
