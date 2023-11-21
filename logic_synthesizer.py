@@ -63,6 +63,20 @@ def substituition(equations):
 	for eqn in equations: #puts every equation in dictionary
 		seperate_eqn = eqn.split("=")
 		eqns_dict[seperate_eqn[0]]=seperate_eqn[1]
+	print("Sub")
+	print(eqns_dict)
+	#is equation referenced?
+	#for entry1 in eqns_dict:
+	#	for entry2 in eqns_dict:
+	#		if entry1 == entry2:
+	#			pass
+	#		else:
+	#			if entry1 in eqns_dict[entry2]:
+	#				positions_entry = [index for index, char in enumerate(sentence) if char == entry1]
+	#				new_eqn = eqns_dict[entry2]
+	#				for i in positions_entry:
+	#					new_eqn = new_eqn[:i]+eqns_dict[entry1]
+	#				eqns_dict[entry1]
 
 	#can I completely substitute an equation?
 	# Entry 1 is what is going to be put it. IE: F = c+d
@@ -74,7 +88,9 @@ def substituition(equations):
 			else:
 				equation_new = find_if_same(eqns_dict[entry1], eqns_dict[entry2], entry1)
 				eqns_dict[entry2] = equation_new
+
 	#make a list of strings
+	print(eqns_dict)
 	for entry in eqns_dict:
 		eqns_list.append(entry+"="+eqns_dict[entry])
 	#print("Factored")
