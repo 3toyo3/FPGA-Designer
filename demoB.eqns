@@ -1,3 +1,11 @@
 #10 independent SOP formula (not canonical) that are a function of 6 variables each 
-F= AB+ABC+C
-G= AB+C
+Q=AB+CDEF'
+G=AB'C+A'BD+E'F'
+H=AE+BF+CF+D'
+J=A'BC'DE+AB'CDF
+K=A'B'CEF+ABC'+A'BCDF
+L=AB'C'DEF+A'BCEF+B'CDF'
+M=AB'CE'F'+BC'D
+N=A'EF'+AC'DF+B'CD'EF
+O=ADF'+CD'+BE
+P=A'BC'F+AB'CD'E
