@@ -22,7 +22,7 @@ def textToArray(equations):
 
 		truthtable = eqnToArray(eqn)
 		names[equation_ID]=truthtable
-		print("Finished {}".format(eqn))
+		#print("Finished {}".format(eqn))
 	return names
 
 #Takes a dictionary with equations' MD arrays, and outputs list of minimized equations, references miminize.py
@@ -77,6 +77,8 @@ def substituition(equations):
 	#make a list of strings
 	for entry in eqns_dict:
 		eqns_list.append(entry+"="+eqns_dict[entry])
+	#print("Factored")
+	#print(eqns_list)
 	return eqns_list
 
 def find_if_same(eqn1, eqn2, eq1_out):
@@ -193,6 +195,8 @@ def mutual_factor(equations):
 		if type(new_terms) is list:
 			new_terms = "+".join(new_terms)
 		eqns_list.append(eqn+"="+new_terms)
+	#print("Factored")
+	#print(eqns_list)
 	return eqns_list
 
 # From a list of terms, outputs the most common terms as a dictionary
