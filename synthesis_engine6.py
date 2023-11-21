@@ -1,5 +1,6 @@
 from LUT6 import LUT6
 import numpy as np
+from minimize import *
 
 LUTs=[]
 first_unused_lut=0
@@ -20,7 +21,7 @@ def create_LUTs(num_luts):
 
     #Create the LUTs
     for i in range(num_luts):
-        LUTs.append(LUT6("",[],""))
+        LUTs.append(LUT6("",[],"",""))
 #*********************************************************************************************************************
 
 
@@ -36,6 +37,7 @@ def print_LUTs():
         print()
         print("LUT"+str(i))
         print(lut_symbols[i]+" = "+LUTs[i].name)
+        print("External Output: "+LUTs[i].external_output)
         print()
 
 #*********************************************************************************************************************
@@ -46,15 +48,9 @@ def print_LUT(index):
     print("FUNCTION IMPLEMENTED: "+LUTs[index].name)
     print("INPUTS: "+LUTs[index].inputs)
     print("OUTPUT: "+LUTs[index].output)
+    print("External Output: "+LUTs[index].external_output)
 #*********************************************************************************************************************
 
-def get_LUT_global(lut_num):
-	global LUTs
-	return LUTs[lut_num]
-
-def get_LUTS_global():
-	global LUTs
-	return LUTs
 
 #This function returns the number of distinct variables in a string
 #*********************************************************************************************************************
@@ -63,13 +59,22 @@ def num_distinct_variables(function):
     count_variables=0
     variables_used=[]
     global first_unused_lut
-
+    
     for i in range(len(function)):
 
         #If a letter has not been used yet, it is a distinct variable
-        if (letters.count(function[i]) or lut_symbols.count(function[i])) and not(variables_used.count(function[i])):
-            count_variables+=1
-            variables_used.append(function[i])
+        if (letters.count(function[i]) or lut_symbols.count(function[i])):
+            
+            
+
+            conditional_prime=''
+            if not(i==len(function)-1) and function[i+1]=="'":
+                
+                conditional_prime="'"
+            if not(variables_used.count(function[i])) and not(variables_used.count(function[i]+"'")):
+                count_variables+=1
+                variables_used.append(function[i]+conditional_prime)
+
     
     return count_variables,variables_used
 #*********************************************************************************************************************
@@ -184,7 +189,14 @@ def split(function):
 
     global LUTs
     global first_unused_lut
+    global depth
+    global ext_out
+    depth+=1
 
+    if function[1]=="=":
+        depth=1
+        ext_out=function[0]
+        function=function[2:]
 
 
     #Base case: The function only conists of one input
@@ -192,12 +204,14 @@ def split(function):
         return ""
     
     #Base case: function contains 6 inputs, can now implement on LUT
-    elif num_distinct_variables(function)[0]==6:
+    elif num_distinct_variables(function)[0]<=6:
         
         #Build the LUT
         LUTs[first_unused_lut].name=function
         LUTs[first_unused_lut].inputs= num_distinct_variables(function)[1]
         LUTs[first_unused_lut].output=str(first_unused_lut)
+        if depth==1:
+            LUTs[first_unused_lut].external_output=ext_out
 
         #Now move to the next LUT
         first_unused_lut+=1
@@ -239,6 +253,7 @@ def split(function):
                         
                         next_function+="+"+split_function[j]
 
+                depth=0
                 return split(next_function)
                 
         
@@ -265,7 +280,9 @@ def split(function):
             if sum==6:
                 
                 six_input_function=six_input_function[:len(six_input_function)-1]
-                return split(rest_of_function+split(six_input_function))
+                temp=split(six_input_function)
+                depth=0
+                return split(rest_of_function+temp)
                 
         
         #Third Condition: Are there any slices greater than 6 inputs that can be broken up?
@@ -285,6 +302,7 @@ def split(function):
                         
                         next_function+="+"+split_function[j]
 
+                depth=0
                 return split(next_function)
 
 
@@ -296,7 +314,8 @@ def split(function):
 
             #Now move to the next LUT
             first_unused_lut+=1
-            return lut_symbols[first_unused_lut-1]
+            depth=0
+            return split(lut_symbols[first_unused_lut-1])
 
         #Take the slice with the greatest number of inputs and build a LUT from that
         max=np.max(inputs_per_slice)
@@ -325,7 +344,7 @@ def split(function):
                 next_function+="+"+split_function[j]
             
         
-        print(next_function)
+        depth=0
         return split(next_function)
 
 
@@ -361,6 +380,7 @@ def split(function):
                         
                         next_function+="("+split_function[j]+")"
 
+                depth=0
                 return split(next_function)
                 
         
@@ -386,7 +406,9 @@ def split(function):
 
             if sum==6:
                 six_input_function=six_input_function[:len(six_input_function)]
-                return split(rest_of_function+"("+split(six_input_function)+")")
+                temp=split(six_input_function)
+                depth=0
+                return split(rest_of_function+"("+temp+")")
                 
         
         #Third Condition: Are there any slices greater than 6 inputs that can be broken up?
@@ -406,6 +428,7 @@ def split(function):
                         
                         next_function+="("+split_function[j]+")"
 
+                depth=0
                 return split(next_function)
         
         #Take the slice with the greatest number of inputs and build a LUT from that
@@ -435,7 +458,7 @@ def split(function):
                 next_function+="+"+split_function[j]
             
         
-           
+        depth=0   
         return split(next_function)
                
 
@@ -453,18 +476,386 @@ def split(function):
     if next_function[-1]=="(":
         next_function=next_function[:len(next_function)-1]
     
+    depth=0
     return(split(next_function))
 #*********************************************************************************************************************
 
+#This function returns an array as a string
+#*********************************************************************************************************************
+def to_string(array):
+    return_string=''
+    for i in range(len(array)):
+        return_string+=str(int(array[i]))
+    return return_string
+#*********************************************************************************************************************
+
+#This function creates the bitstream for the virtual FPGA
+#*********************************************************************************************************************
+def write_bitstream(filename):
+    global LUTs
+    global first_unused_lut
+
+    #Initialize the bitstream
+    bitstream=''
+
+    #Walk through each LUT 
+    for i in range(first_unused_lut):
+
+        #First handle the code for the variables
+        variables=LUTs[i].inputs
+
+        #52 bits for external inputs and their complements, 26 bits for internal connections
+        inputcode=np.zeros(78,np.int8)
+        
+        
+        #Walk through each variable and build the correct bitstream
+        for j in range(len(variables)):
+
+            try:
+                index=letters.index(variables[j][0])
+            except ValueError:
+                index=-1
+
+            if not(index == -1):
+                index*=2
+                if len(variables[j]) >1 and variables[j][1]=="'":
+                    index+=1
+                
+            else:
+                index=52+lut_symbols.index(variables[j][0])
+        
+            inputcode[index]=1
+
+            #Add to the bitstream
+            bitstream+=to_string(inputcode)
+            #bitstream+=' '
+            
+
+            inputcode=np.zeros(78,np.int8)
+            
+        for j in range(6-len(variables)):
+            inputcode=np.zeros(78,np.int8)
+            bitstream+=to_string(inputcode)
+            #bitstream+=' '
+
+        
+        
+      
+        
+        #Now handle the output of the LUT
+
+        #Translate to a format that Ysatis' function accepts
+        
+        function=translate(LUTs[i].inputs,LUTs[i].name)
+        
+
+        #Build the truth table
+        array=eqnToArray(lut_symbols[i]+"="+function)
+
+        #Add to the bitstream
+        array=array.flatten()
+        print(array)
+        
+        repeat=64/len(array)
+        for i in range(int(repeat)):
+            bitstream+=to_string(array)
+
+    
 
     
         
 
+    #Take care of output connections
+    for i in range(first_unused_lut):
+        code=np.zeros(26,np.int8)
+        if not(LUTs[i].external_output==''):
+            index=letters.index(LUTs[i].external_output)
+            code[index]=1
+        bitstream+=to_string(code)
+        
+    
+        
+    #Finally, write the bitstream
+    f = open(filename, "w")
+    f.write(bitstream)
+    f.close()
+#*********************************************************************************************************************
+    
+
+
+#This function build the LUTs from the bitstream
+#*********************************************************************************************************************
+def build_from_bitstream(filename):
+
+    global LUTs
+    global first_unused_lut
+
+    #Read the bitstream
+    f = open(filename, "r")
+    bitstream= f.read()
+    f.close()
+    
+    #Make the LUTs
+    num_luts= int(len(bitstream)/558)
+    
+    create_LUTs(num_luts)
+
+    first_unused_lut=num_luts
+   
+    #Walk through each LUT
+    for i in range(num_luts):
+        
+        
+        
+        #Get the working section of the bitstream
+        working_bitstream=bitstream[i*532:i*532+10000]
+
+        for var in range(6):
+            
+            var_working_bitstream=working_bitstream[var*78:var*78+78]
+            
+
+            for j in range(len(var_working_bitstream)):
+                if var_working_bitstream[j]=='1':
+            
+                
+                    #If the input is one of the external inputs
+                    if j<52:
+
+                        index=0
+                        conditional_prime=""
+                        if j % 2==0:
+                            index= j/2
+                        else:
+                            index=(j-1)/2
+                            conditional_prime="'"
+                    
+                    
+                        LUTs[i].inputs.append(letters[int(index)]+conditional_prime)
+                
+                    #If the input comes from another LUT
+                    else:
+                        index=j-52
+                        LUTs[i].inputs.append(lut_symbols[int(index)])
+
+        #Now rebuild the functions
+        
+        #Get the working bitstream
+        working_bitstream=bitstream[532*i+468:532*i+468+64]
+        
+        
+        
+        #Truth table that will be passed to minimized_SOP
+        truthtable = np.zeros((2,2,2,2,2,2))
+        
+        for j in range(64):
+            truthtable[dec_to_binary_6bit(j)[5]][dec_to_binary_6bit(j)[4]][dec_to_binary_6bit(j)[3]][dec_to_binary_6bit(j)[2]][dec_to_binary_6bit(j)[1]][dec_to_binary_6bit(j)[0]]=int(working_bitstream[j])
+        
+        function=minimized_sop(truthtable)
+        
+
+        
+        
+        #Assign the function to the LUT
+        LUTs[i].name=translate_reverse(LUTs[i].inputs,function)
+
+
+        #Finally rebuild the output connections
+        working_bitstream=bitstream[532*num_luts+i*26:532*num_luts+i*26+26]
+        for j in range(len(working_bitstream)):
+            if working_bitstream[j] =="1":
+                LUTs[i].external_output=letters[j]
+
+
+#*********************************************************************************************************************        
+        
+        
+#This function will convert to functions to A,B,C,D for the purposes of truth table generation
+#*********************************************************************************************************************
+def translate(inputs,function):
+    
+    l_symbols=["0","1","2","3","4","5"]
+    temp_lut_symbols=l_symbols
+    
+    
+
+    temp_inputs=inputs
+    
+    for i in range(len(temp_inputs)):
+        for j in range(i,len(temp_inputs)):
+            if temp_inputs[i]+"'"==temp_inputs[j]:
+                temp=inputs[i]
+                inputs[i]=inputs[j]
+                inputs[j]=temp
+
+                temp=temp_lut_symbols[i]
+                temp_lut_symbols[i]=temp_lut_symbols[j]
+                temp_lut_symbols[j]=temp
+
+    
+    
+                
+
+    for i in range(len(inputs)):
+        
+        function=function.replace(inputs[i],temp_lut_symbols[i+6-len(inputs)])
+        
+        
+    
+    for i in range(len(inputs)):
+        function=function.replace(l_symbols[i+6-len(inputs)],letters[i+6-len(inputs)])
+        
+  
+    
+    return function
+#*********************************************************************************************************************
+
+#This function is necessary for decoding LUT output from the bitstream
+#*********************************************************************************************************************
+def translate_reverse(inputs,function):
+    
+    l_symbols=["0","1","2","3","4","5"]
+    
+    for i in range(len(inputs)-1,-1,-1):
+        function=function.replace(letters[i+6-len(inputs)],l_symbols[i+6-len(inputs)])
+    for i in range(len(inputs)-1,-1,-1):
+        function=function.replace(l_symbols[i+6-len(inputs)],inputs[i])
+        
+    return function
+#*********************************************************************************************************************         
+
+#Decimal to Binary
+#*********************************************************************************************************************
+def dec_to_binary_6bit(num):
+    code0=0
+    code1=0
+    code2=0
+    code3=0
+    code4=0
+    code5=0
+
+    if num%2==1:
+        code0=1
+        num -=1
+    num /=2
+    if num%2==1:
+        code1=1
+        num -=1
+    num /=2
+    if num%2==1:
+        code2=1
+        num -=1
+    num /=2
+    if num%2==1:
+        code3=1
+        num -=1
+    num /=2
+    if num%2==1:
+        code4=1
+        num -=1
+    num /=2
+    if num%2==1:
+        code5=1
+    
+    return code0,code1,code2,code3,code4,code5
+#*********************************************************************************************************************
+        
+
+def eqnToArray(eqn):
+	#print(eqn)
+	seperate_formula=eqn.split("=")
+	eqn_terms=seperate_formula[1]
+	#print(seperate_formula)
+	output=seperate_formula[0]
+
+	unique_inputs=[]
+	for char in eqn:
+		if char not in unique_inputs and char.isalpha():
+			if char not in output:
+				unique_inputs.append(char)
+	inputs=tuple(unique_inputs)
+
+	#make truth table
+	size=len(inputs)
+	truthtable = np.zeros([2]*size) #make array based on num of inputs
+	terms = eqn_terms.split('+')
+	true_indices = []
+	for term in terms:
+		#print(true_indices)
+		truth_value = []
+		#print(term)
+		for i in range(len(inputs)):
+			truth_value.append('*') #initialize array with *
+		for i in range(len(term)): #Find if ' or normal
+			char = term[i]
+			#print(char)
+			if char == "'":
+				char = term[i-1]
+				place = inputs.index(char)
+				truth_value[place] = 0
+				#print("Zero")
+			else:
+				place = inputs.index(char)
+				truth_value[place] = 1
+				#print("One")
+		if len(truth_value) != len(inputs):
+			print("Not matching in truth table generation")
+		if '*' in truth_value:
+			#print("Dont care")
+			new_indices = dont_cares(truth_value)
+			#print(new_indices)
+			for item in new_indices:
+				#print("Item")
+				#print(item)
+				true_indices.append(tuple(item))
+		else:
+			#print(truth_value)
+			#print(item)
+			new_indices = truth_value
+			true_indices.append(tuple(new_indices))
+	for indice in np.ndindex(truthtable.shape):
+		if indice in true_indices:
+			truthtable[indice] = 1
+			#print("{} term marked as true".format(indice))
+	return truthtable
+
+#Takes a list of characters, and if any char represents a dont care, expands the list
+def dont_cares(true):
+	none_holder = []
+	none_holder.append(true)
+	clean_holder = []
+	while len(none_holder) > 0:
+		if '*' in none_holder[0]:
+			working = list(none_holder.pop(0))
+			none_place = working.index('*')
+			working[none_place] = 0
+			working_zero=tuple(working)
+			none_holder.append(working_zero)
+			working[none_place] = 1
+			working_one=tuple(working)
+			none_holder.append(working_one)
+		else:
+			working = none_holder.pop(0)
+			clean_holder.append(working)
+	return clean_holder
+
+ 
+#Main Function
+#*********************************************************************************************************************
+def assign_LUTs(functions,num_luts):
+    global depth
+    create_LUTs(num_luts)
+    for i in range(len(functions)):
+        depth=0
+        split(functions[i])
+    print_LUTs()
 #*********************************************************************************************************************
 
 
-#Testing
-create_LUTs(8)
-print(split("AB'(C+D)+A(D'+E'FG)+AB'(I+JK)"))
-print_LUTs()
-print(LUTs[5].output)
+test=["F= A'+BC+DEF+G(H+I)"]
+assign_LUTs(test,15)
+filename='bitstream.txt'
+#write_bitstream(filename)
+#build_from_bitstream(filename)
+#print('**********************************************************************************************')
+#print_LUTs()
