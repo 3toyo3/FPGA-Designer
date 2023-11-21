@@ -204,7 +204,7 @@ def split(function):
     global depth
     global ext_out
     
-    var=function[1]
+    var=function[0]
    
     
     
@@ -219,6 +219,7 @@ def split(function):
     
     #Base case: The function only consists of one input,solution to G=F
     if num_distinct_variables(function)[0]==1:
+        print(var)
         for i in range(first_unused_lut):
             for j in range(len(LUTs[i].external_output)):
                 if LUTs[i].external_output[j]==num_distinct_variables(function)[1][0]:
@@ -633,8 +634,13 @@ def write_bitstream(filename):
     for i in range(first_unused_lut):
         code=np.zeros(26,np.int8)
         if not(LUTs[i].external_output==''):
-            index=letters.index(LUTs[i].external_output)
-            code[index]=1
+            for j in range(len(LUTs[i].external_output)):
+                try:
+                    index=letters.index(LUTs[i].external_output[j])
+                except ValueError:
+                    index=-1
+                if not(index==-1):
+                    code[index]=1
         bitstream+=to_string(code)
         
     
@@ -723,7 +729,7 @@ def build_from_bitstream(filename):
         working_bitstream=bitstream[328*num_luts+i*26:328*num_luts+i*26+26]
         for j in range(len(working_bitstream)):
             if working_bitstream[j] =="1":
-                LUTs[i].external_output=letters[j]
+                LUTs[i].external_output=LUTs[i].external_output+' '+letters[j]
 
 
 #*********************************************************************************************************************        
@@ -952,7 +958,7 @@ def assign_LUTs(functions,num_luts):
 #Testing
 
 #test=["F=AB+CD","G=AB'C+A'BD","H=A+B+C+D","J=A'BC'D+AB'CD'","K=A'B'C+ABC'+A'BCD","L=AB'C'D+A'BC+B'CD","M=AB'C+A'BC'D","N=A'BC+AC'D+B'CD'","O=ABD+A'B'CD'","P=A'BC'+AB'CD'"]
-test=["Z=A'B'C'+D'E'F+G'H'I'J+K+LMNO'+PQR+S'TU+VWXY"]
+test=["F=AB","G=F"]
 assign_LUTs(test,30)
 filename='bitstream.txt'
 write_bitstream(filename)
