@@ -1,3 +1,12 @@
 #10 inter-dependent SOP formula (not canonical) that are a function of 6 variables each o
-F= AB+ABC+C
-G= AB+C
+Q=ABE'F+ABC+C+D'E
+G=F+B'+AC'DE
+H=F+A+BCDE
+I=ABCD+BEF'
+J=I+AB+CEF'
+K=I+A'B'C'D'+E
+L=A'B'+C'D'+B'D'EF'
+M=L+H+EF'+E'F+AB
+N=G+H+J+ABC
+O=ABCD'+B'+EF
+P=K+O+N+ABD'
