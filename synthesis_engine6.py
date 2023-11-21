@@ -16,6 +16,9 @@ def create_LUTs(num_luts):
     global LUTs
     global first_unused_lut
 
+    if (num_luts >26):
+        raise Exception("Too many LUTs")
+
     #Reset the LUTs
     LUTs=[]
     first_unused_lut=0
