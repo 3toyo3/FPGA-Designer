@@ -920,7 +920,7 @@ def assign_LUTs(functions,num_luts):
     for i in range(len(functions)):
         depth=0
         split(functions[i])
-    print_LUTs()
+    #print_LUTs()
 #*********************************************************************************************************************    
         
 

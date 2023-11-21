@@ -2,7 +2,7 @@ import numpy as np
 # Takes string of equation and outputs a truth table as a MD array
 
 def eqnToArray(eqn):
-	print(eqn)
+	#print(eqn)
 	seperate_formula=eqn.split("=")
 	eqn_terms=seperate_formula[1]
 	#print(seperate_formula)
