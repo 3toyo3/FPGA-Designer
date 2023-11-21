@@ -205,16 +205,13 @@ def main():
 		bitstream_Exist=input()
 		if bitstream_Exist.upper()=='A':
 			useBitstream=True
-			while True:
-				bitstream_file=input("Bitstream Filename: ")
-				if check_file(bitstream_file):
-					if bitstream_file[-5:] == ".bits":
-						print("File exists.")
-						break
-					else:
-						print("Make sure that your file is a .bits file")
-				else:
-					print("Sorry that file doesn't seem to exist")
+			bitstream_file=input("Bitstream Filename: ")
+			bitstream_file = bitstream_file + ".bits"
+			if check_file(bitstream_file):
+				print("File exists.")
+				break
+			else:
+				print("Sorry that file doesn't seem to exist")
 		elif bitstream_Exist.upper()=='B':
 			print("Creating a new FPGA...")
 			break
@@ -223,8 +220,9 @@ def main():
 
 	#===============Recraft FPGA
 	if useBitstream:
-		LUTS = build_from_bitstream(bitstream_file) #TODO make this GET
-		FPGA1 = recraft_FPGA(equations)
+		LUTS = sy.build_from_bitstream(bitstream_file) #only 4 input :(
+		LUTS = sy.get_LUTS_global()
+		FPGA1 = recraft_FPGA(LUTS)
 
 	#================MAKE NEW FPGA via USER INPUT
 	else:
@@ -236,20 +234,21 @@ def main():
 		equations = get_equations()
 
 		FPGA1 = craft_new_FPGA(LUTS_num, LUT_type, connect_type, connections, input_num, output_num, equations)
+		bitstream_file = ""
 
 	#================User output
 	key = 'i'
 	output_prompt()
 	while key != 'q':
-		key=input("What do you want to do?")
+		key=input("What do you want to do?\n")
 		if key=='1':  # Show all LUT assignments
 			LUTS = FPGA1.get_LUTS()
 			for i in range(len(LUTS)):
 				print("LUT{}: {}".format(i,LUTS[i]))
 		elif key == '2': # Show specific LUT assignment
-			num = input("Which LUT do you want to see? 1-{}".format(LUTs_num))
-			if num <= FPGA1.get_num_luts(): #makesure no index error
-				LUT = FPGA1.get_LUT(num)
+			num = input("Which LUT do you want to see? 1-{}\n".format(LUTS_num))
+			if int(num) <= FPGA1.get_num_luts(): #makesure no index error
+				LUT = FPGA1.get_LUT(int(num))
 				print(LUT)
 			else:
 				print("LUT{} doesn't exist".format(num))
@@ -265,19 +264,21 @@ def main():
 			for i in range(len(ex_outputs)):
 				print("O{}: {}".format(i, ex_outputs[i]))
 		elif key == '6': # Craft bitstream
-			bitstream_file = input("Please put a name for the bitstream file.")
+			bitstream_file = input("Please put a name for the bitstream file.\n")
 			bitstream_file = bitstream_file + ".bits"
 			sy.write_bitstream(bitstream_file)
 			print("Saved as {}".format(bitstream_file))
 		elif key == '7': # Show resource allocation
 			used_LUTS = FPGA1.get_num_luts() #TODO get total number of luts
-			used_connections = FPGA1.get_num_connections()
+			used_connections = FPGA1.get_num_internal_connections()
 			total_connection = FPGA1.get_lut_size() * used_LUTS
-			if 'total_LUTS' in locals():
-				print("% of LUT: {}".format((used_LUTS/total_LUTS) * 100)) #luts / connections of nodes
+			#print("{} {} {}".format(used_LUTS, used_connections, total_connection))
+			if 'LUTS_num' in locals():
+				print("% of LUT: {:.2f}".format((used_LUTS/LUTS_num) * 100)) #luts / connections of nodes
+				total_connection = LUT_type * LUTS_num
 			else:
-				print("% of LUT: {} used".format((used_LUTS/26) * 100))
-			print("% of connections: {}".format((used_connections/total_connection) * 100)) #number of connections
+				print("% of LUT: {:.2f} used".format((used_LUTS/26) * 100))
+			print("% of connections: {:.2f}".format((used_connections/total_connection) * 100)) #number of connections
 			bitstream_exists=check_file(bitstream_file)
 			if bitstream_exists:
 				print("Total memory required: {}".format(getsize(filename))) #size of bitstream

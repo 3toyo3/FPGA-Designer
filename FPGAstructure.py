@@ -23,21 +23,30 @@ class FPGA:
 		return list(self.FPGA_graph.edges())
 
 	def get_num_connections(self):
+		#print("Num of connections: {}".format(self.FPGA_graph.number_of_edges))
 		return self.FPGA_graph.number_of_edges()
+
+	def get_num_internal_connections(self):
+		exclude = self.inputs + self.outputs
+		num_edges_excluded = self.FPGA_graph.number_of_edges() - sum(1 for u, v in self.FPGA_graph.edges() if u in exclude and v in exclude)
+		return num_edges_excluded
+
 
 	def get_lut_size(self): #samples three LUTS for the input size
 		connection_count = 0
 		if len(list(self.FPGA_graph.nodes())) > len(self.inputs): #checks assumption of above comment
-			node1=self.LUT[0]
+			node1=self.LUTS[0]
 			connections_of_1=list(self.FPGA_graph.predecessors(node1)) #only checks nodes with inputs
-			node2=self.output[0]
+			node2=self.LUTS[2]
 			connections_of_2=list(self.FPGA_graph.predecessors(node2))
-			node3=self.LUT[1]
+			node3=self.LUTS[1]
 			connections_of_3=list(self.FPGA_graph.predecessors(node3))
-			connection_count=max(connections_of_3, connections_of_2, connections_of_1)
+			connection_count=max(len(connections_of_3), len(connections_of_2), len(connections_of_1))
+		#print("Connection: {}".format(connection_count))
 		return connection_count
 
 	def get_num_luts(self):
+		#print(len(self.LUTS))
 		return len(self.LUTS)
 
 	def get_nodes(self):
@@ -71,6 +80,7 @@ class FPGA:
 				connections.append(connection)
 			self.FPGA_graph.add_edges_from(connections)
 			self.LUTS.append(node_name)
+
 
 	def get_LUTS(self): #returns lut nodes
 		eqns = []
